@@ -1,0 +1,56 @@
+[
+  {
+    "XBRL representation": "A. Original verbose rendering",
+    "Mode": "dense",
+    "Records": 420,
+    "Avg chars": 534,
+    "Financial R@3": 0.5714,
+    "Financial MRR@10": 0.5083,
+    "Overall R@3": 0.6333
+  },
+  {
+    "XBRL representation": "A. Original verbose rendering",
+    "Mode": "sparse",
+    "Records": 420,
+    "Avg chars": 534,
+    "Financial R@3": 0.1429,
+    "Financial MRR@10": 0.1587,
+    "Overall R@3": 0.7333
+  },
+  {
+    "XBRL representation": "B. + label-first, compact periods, prose dropped",
+    "Mode": "dense",
+    "Records": 413,
+    "Avg chars": 389,
+    "Financial R@3": 0.5714,
+    "Financial MRR@10": 0.6071,
+    "Overall R@3": 0.6333
+  },
+  {
+    "XBRL representation": "B. + label-first, compact periods, prose dropped",
+    "Mode": "sparse",
+    "Records": 413,
+    "Avg chars": 389,
+    "Financial R@3": 0.1429,
+    "Financial MRR@10": 0.1633,
+    "Overall R@3": 0.7333
+  },
+  {
+    "XBRL representation": "C. + statement-label aliases (final)",
+    "Mode": "dense",
+    "Records": 413,
+    "Avg chars": 391,
+    "Financial R@3": 0.8571,
+    "Financial MRR@10": 0.8571,
+    "Overall R@3": 0.7
+  },
+  {
+    "XBRL representation": "C. + statement-label aliases (final)",
+    "Mode": "sparse",
+    "Records": 413,
+    "Avg chars": 391,
+    "Financial R@3": 0.7143,
+    "Financial MRR@10": 0.6476,
+    "Overall R@3": 0.8667
+  }
+]

@@ -39,6 +39,41 @@ HEADLINE_CONCEPTS = {
     "CashAndCashEquivalentsAtCarryingValue",
 }
 
+# Vocabulary bridge between how a US-GAAP concept is *named* and how a financial
+# statement *labels* the same line. "Revenue from Contract with Customer,
+# Excluding Assessed Tax" is the XBRL element name for what every 10-K income
+# statement calls total operating revenue, and no retriever can be expected to
+# make that leap unaided.
+#
+# These are standard line-item names taken from 10-K statement conventions, not
+# from this project's evaluation questions. Their contribution is measured
+# separately from the structural fixes (see reports/results/stage0_xbrl.md) so
+# the two effects can be judged independently.
+CONCEPT_ALIASES: dict[str, str] = {
+    "RevenueFromContractWithCustomerExcludingAssessedTax":
+        "total revenue, total operating revenue, operating revenue, revenues, sales, top line",
+    "CostsAndExpenses":
+        "total operating expense, total costs and expenses, operating expenses",
+    "OperatingIncomeLoss":
+        "operating income, operating profit, income from operations",
+    "NetIncomeLoss":
+        "net income, net profit, net earnings, bottom line",
+    "EarningsPerShareDiluted": "diluted EPS, diluted earnings per share",
+    "EarningsPerShareBasic": "basic EPS, basic earnings per share",
+    "Assets": "total assets, balance sheet total",
+    "Liabilities": "total liabilities",
+    "StockholdersEquity":
+        "total stockholders equity, shareholders equity, shareowners equity, book value",
+    "CashAndCashEquivalentsAtCarryingValue":
+        "cash, cash and cash equivalents, cash on hand, liquidity",
+    "LongTermDebtNoncurrent": "long term debt, non-current debt",
+    "OperatingLeaseLiabilityNoncurrent": "operating lease liabilities",
+}
+
+# Prose blobs rather than reported facts. They are long, boilerplate-heavy and
+# act purely as retrieval distractors for a customer-support corpus.
+_NON_FACT_MARKERS = ("TextBlock", "PolicyText", "Axis", "Domain")
+
 
 @dataclass
 class FinancialRecord:
@@ -88,18 +123,31 @@ def load_labels(labels_path: Path) -> dict[str, str]:
 
 
 # ── Context resolution ────────────────────────────────────────────────────────
-def _describe_period(context) -> str:
+def _describe_period(context, legacy: bool = False) -> str:
+    """Compact period label.
+
+    Full calendar years collapse to "FY2025". The verbose
+    "for the period 2025-01-01 to 2025-12-31" form repeated across hundreds of
+    records was shared vocabulary that swamped each record's distinguishing
+    signal for both BM25 and the embedding models. ``legacy=True`` restores that
+    original phrasing so the cost of it can be measured rather than asserted.
+    """
     period = context.find(f"{XBRLI}period")
     if period is None:
-        return "unspecified period"
+        return "period not stated"
     instant = period.find(f"{XBRLI}instant")
     if instant is not None:
         return f"as of {instant.text}"
     start = period.find(f"{XBRLI}startDate")
     end = period.find(f"{XBRLI}endDate")
     if start is not None and end is not None:
-        return f"for the period {start.text} to {end.text}"
-    return "unspecified period"
+        s, e = start.text, end.text
+        if legacy:
+            return f"for the period {s} to {e}"
+        if s.endswith("-01-01") and e.endswith("-12-31") and s[:4] == e[:4]:
+            return f"FY{s[:4]}"
+        return f"{s} to {e}"
+    return "period not stated"
 
 
 def _describe_dimensions(context, labels: dict[str, str]) -> str:
@@ -137,8 +185,17 @@ def parse_xbrl(
     labels_path: Path,
     entity: str = "Delta Air Lines, Inc.",
     fiscal_year: str = "FY2025",
+    drop_non_facts: bool = True,
+    use_aliases: bool = True,
+    legacy_rendering: bool = False,
 ) -> list[FinancialRecord]:
-    """Render the XBRL instance as one text record per reported concept."""
+    """Render the XBRL instance as one text record per reported concept.
+
+    ``drop_non_facts`` removes TextBlock/policy prose that acts as retrieval
+    noise; ``use_aliases`` adds the statement-label vocabulary bridge;
+    ``legacy_rendering`` restores the original verbose boilerplate. All three are
+    switchable so each contribution is measured rather than assumed.
+    """
     from lxml import etree
 
     labels = load_labels(Path(labels_path))
@@ -165,6 +222,8 @@ def parse_xbrl(
             else "srt" if "/srt/" in namespace
             else namespace.rstrip("/").split("/")[-1]
         )
+        if drop_non_facts and any(marker in local for marker in _NON_FACT_MARKERS):
+            continue
         context = contexts.get(el.get("contextRef"))
         if context is None:
             continue
@@ -172,9 +231,10 @@ def parse_xbrl(
         value = _format_value(el.text or "", units.get(el.get("unitRef") or ""))
         if not value or len(value) > 400:  # skip embedded HTML text blocks
             continue
-        period = _describe_period(context)
+        period = _describe_period(context, legacy=legacy_rendering)
         dims = _describe_dimensions(context, labels)
-        scope = dims or "Consolidated (no segment breakdown)"
+        scope = dims or ("Consolidated (no segment breakdown)" if legacy_rendering
+                         else "Consolidated")
 
         line = f"  - {scope}, {period}: {value}"
         key = (prefix, local)
@@ -186,20 +246,33 @@ def parse_xbrl(
     records: list[FinancialRecord] = []
     for (prefix, concept), lines in sorted(grouped.items()):
         label = labels.get(f"{prefix}_{concept}", concept)
-        header = (
-            f"{entity} — {fiscal_year} Form 10-K financial data (SEC XBRL).\n"
-            f"Financial concept: {label} ({prefix}:{concept}).\n"
-            f"Reported values:"
-        )
+
+        # Lead with the distinguishing label rather than the shared boilerplate:
+        # the first tokens carry the most retrieval weight, and every record used
+        # to open with the same entity/filing sentence.
+        alias = CONCEPT_ALIASES.get(concept) if use_aliases else None
+        if legacy_rendering:
+            header = [
+                f"{entity} — {fiscal_year} Form 10-K financial data (SEC XBRL).",
+                f"Financial concept: {label} ({prefix}:{concept}).",
+                "Reported values:",
+            ]
+        else:
+            header = [f"{label} — {entity} {fiscal_year} Form 10-K."]
+            if alias:
+                header.append(f"Also known as: {alias}.")
+            header.append(f"XBRL concept {prefix}:{concept}.")
+
         records.append(
             FinancialRecord(
                 concept=concept,
                 prefix=prefix,
                 label=label,
-                text=header + "\n" + "\n".join(lines),
+                text="\n".join(header) + "\n" + "\n".join(lines),
                 fact_count=len(lines),
                 headline=concept in HEADLINE_CONCEPTS,
-                meta={"entity": entity, "fiscal_year": fiscal_year},
+                meta={"entity": entity, "fiscal_year": fiscal_year,
+                      "aliased": bool(alias)},
             )
         )
     return records

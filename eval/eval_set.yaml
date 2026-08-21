@@ -245,7 +245,7 @@ questions:
     query_type: semantic
     gold_doc: financial_xbrl
     gold_locators: ["us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax"]
-    gold_span: "Consolidated (no segment breakdown), for the period 2025-01-01 to 2025-12-31: USD 63,364,000,000"
+    gold_span: "Consolidated, FY2025: USD 63,364,000,000"
     ideal_answer: "Delta reported total consolidated revenue of USD 63,364,000,000 (about $63.36 billion) for the fiscal year ended December 31, 2025, up from $61,643,000,000 in 2024."
 
   - id: F02
@@ -254,7 +254,7 @@ questions:
     query_type: keyword
     gold_doc: financial_xbrl
     gold_locators: ["us-gaap:NetIncomeLoss"]
-    gold_span: "for the period 2025-01-01 to 2025-12-31: USD 5,005,000,000"
+    gold_span: "Consolidated, FY2025: USD 5,005,000,000"
     ideal_answer: "Delta reported net income attributable to the parent of USD 5,005,000,000 (about $5.0 billion) for fiscal year 2025, compared with $3,457,000,000 in 2024."
 
   # F03 is a deliberate routing trap: it sounds like a cargo-tariff question, but
@@ -265,7 +265,7 @@ questions:
     query_type: semantic
     gold_doc: financial_xbrl
     gold_locators: ["us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax"]
-    gold_span: "Cargo and Freight, for the period 2025-01-01 to 2025-12-31: USD 900,000,000"
+    gold_span: "Cargo and Freight, FY2025: USD 900,000,000"
     ideal_answer: "Delta reported cargo and freight revenue of USD 900,000,000 (about $900 million) for the fiscal year ended December 31, 2025, up from $822,000,000 in 2024 and $723,000,000 in 2023."
     notes: "Routing hard-negative: lexically cargo-flavoured, but the answer lives in the financial XBRL, not the cargo tariff."
 
@@ -275,7 +275,7 @@ questions:
     query_type: keyword
     gold_doc: financial_xbrl
     gold_locators: ["us-gaap:EarningsPerShareDiluted"]
-    gold_span: "for the period 2025-01-01 to 2025-12-31: USD 7.66"
+    gold_span: "Consolidated, FY2025: USD 7.66"
     ideal_answer: "Delta reported diluted earnings per share of $7.66 for the fiscal year ended December 31, 2025."
 
   - id: F05
@@ -284,7 +284,7 @@ questions:
     query_type: semantic
     gold_doc: financial_xbrl
     gold_locators: ["us-gaap:Assets"]
-    gold_span: "as of 2025-12-31: USD 81,317,000,000"
+    gold_span: "Consolidated, as of 2025-12-31: USD 81,317,000,000"
     ideal_answer: "Delta reported total assets of USD 81,317,000,000 (about $81.3 billion) as of December 31, 2025."
 
   - id: F06
@@ -293,7 +293,7 @@ questions:
     query_type: keyword
     gold_doc: financial_xbrl
     gold_locators: ["us-gaap:StockholdersEquity"]
-    gold_span: "as of 2025-12-31: USD 20,853,000,000"
+    gold_span: "Consolidated, as of 2025-12-31: USD 20,853,000,000"
     ideal_answer: "Delta reported total stockholders' equity of USD 20,853,000,000 (about $20.85 billion) as of December 31, 2025."
 
   - id: F07
@@ -302,5 +302,5 @@ questions:
     query_type: semantic
     gold_doc: financial_xbrl
     gold_locators: ["us-gaap:CashAndCashEquivalentsAtCarryingValue"]
-    gold_span: "as of 2025-12-31: USD 4,310,000,000"
+    gold_span: "Consolidated, as of 2025-12-31: USD 4,310,000,000"
     ideal_answer: "Delta reported cash and cash equivalents of USD 4,310,000,000 (about $4.31 billion) as of December 31, 2025."
