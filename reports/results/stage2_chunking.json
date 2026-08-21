@@ -1,0 +1,156 @@
+[
+  {
+    "Strategy": "fixed",
+    "Chunk size": 300,
+    "Overlap": 0,
+    "Chunks": 517,
+    "R@1": 0.6333,
+    "R@3": 0.7667,
+    "MRR@10": 0.7229,
+    "DCG@3": 3.5289,
+    "NDCG@3": 0.8323
+  },
+  {
+    "Strategy": "fixed",
+    "Chunk size": 500,
+    "Overlap": 0,
+    "Chunks": 476,
+    "R@1": 0.6,
+    "R@3": 0.7667,
+    "MRR@10": 0.6906,
+    "DCG@3": 3.5158,
+    "NDCG@3": 0.8534
+  },
+  {
+    "Strategy": "fixed",
+    "Chunk size": 800,
+    "Overlap": 0,
+    "Chunks": 452,
+    "R@1": 0.5667,
+    "R@3": 0.7333,
+    "MRR@10": 0.6704,
+    "DCG@3": 3.3123,
+    "NDCG@3": 0.8242
+  },
+  {
+    "Strategy": "fixed_ov",
+    "Chunk size": 300,
+    "Overlap": 50,
+    "Chunks": 538,
+    "R@1": 0.7,
+    "R@3": 0.8,
+    "MRR@10": 0.7639,
+    "DCG@3": 3.6869,
+    "NDCG@3": 0.8449
+  },
+  {
+    "Strategy": "fixed_ov",
+    "Chunk size": 500,
+    "Overlap": 50,
+    "Chunks": 482,
+    "R@1": 0.6333,
+    "R@3": 0.8,
+    "MRR@10": 0.7261,
+    "DCG@3": 3.6805,
+    "NDCG@3": 0.8757
+  },
+  {
+    "Strategy": "fixed_ov",
+    "Chunk size": 500,
+    "Overlap": 100,
+    "Chunks": 491,
+    "R@1": 0.6667,
+    "R@3": 0.7667,
+    "MRR@10": 0.7205,
+    "DCG@3": 3.6369,
+    "NDCG@3": 0.8409
+  },
+  {
+    "Strategy": "fixed_ov",
+    "Chunk size": 800,
+    "Overlap": 100,
+    "Chunks": 458,
+    "R@1": 0.6333,
+    "R@3": 0.7667,
+    "MRR@10": 0.7033,
+    "DCG@3": 3.4317,
+    "NDCG@3": 0.8142
+  },
+  {
+    "Strategy": "recursive",
+    "Chunk size": 300,
+    "Overlap": 50,
+    "Chunks": 558,
+    "R@1": 0.7,
+    "R@3": 0.8333,
+    "MRR@10": 0.7714,
+    "DCG@3": 3.7428,
+    "NDCG@3": 0.8444
+  },
+  {
+    "Strategy": "recursive",
+    "Chunk size": 500,
+    "Overlap": 50,
+    "Chunks": 500,
+    "R@1": 0.7333,
+    "R@3": 0.8333,
+    "MRR@10": 0.7936,
+    "DCG@3": 3.7658,
+    "NDCG@3": 0.8568
+  },
+  {
+    "Strategy": "recursive",
+    "Chunk size": 500,
+    "Overlap": 100,
+    "Chunks": 501,
+    "R@1": 0.7333,
+    "R@3": 0.8333,
+    "MRR@10": 0.795,
+    "DCG@3": 3.8464,
+    "NDCG@3": 0.8762
+  },
+  {
+    "Strategy": "recursive",
+    "Chunk size": 800,
+    "Overlap": 100,
+    "Chunks": 470,
+    "R@1": 0.6333,
+    "R@3": 0.8667,
+    "MRR@10": 0.7361,
+    "DCG@3": 3.6369,
+    "NDCG@3": 0.871
+  },
+  {
+    "Strategy": "rule_aware",
+    "Chunk size": 300,
+    "Overlap": 50,
+    "Chunks": 638,
+    "R@1": 0.6667,
+    "R@3": 0.8333,
+    "MRR@10": 0.7636,
+    "DCG@3": 3.7341,
+    "NDCG@3": 0.819
+  },
+  {
+    "Strategy": "rule_aware",
+    "Chunk size": 500,
+    "Overlap": 50,
+    "Chunks": 595,
+    "R@1": 0.6333,
+    "R@3": 0.9,
+    "MRR@10": 0.7583,
+    "DCG@3": 3.7043,
+    "NDCG@3": 0.8523
+  },
+  {
+    "Strategy": "rule_aware",
+    "Chunk size": 800,
+    "Overlap": 100,
+    "Chunks": 566,
+    "R@1": 0.6667,
+    "R@3": 0.9,
+    "MRR@10": 0.7708,
+    "DCG@3": 3.6956,
+    "NDCG@3": 0.8594
+  }
+]

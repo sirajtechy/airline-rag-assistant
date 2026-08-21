@@ -1,0 +1,38 @@
+[
+  {
+    "Mode": "Dense only",
+    "R@1 (all)": 0.6,
+    "R@3 (all)": 0.8333,
+    "R@3 (keyword)": 0.8571,
+    "R@3 (semantic)": 0.8125,
+    "R@3 (passenger)": 0.8333,
+    "R@3 (cargo)": 0.8182,
+    "R@3 (financial)": 0.8571,
+    "MRR@10": 0.714,
+    "NDCG@3": 0.7949
+  },
+  {
+    "Mode": "Sparse (BM25) only",
+    "R@1 (all)": 0.6667,
+    "R@3 (all)": 0.7667,
+    "R@3 (keyword)": 0.8571,
+    "R@3 (semantic)": 0.6875,
+    "R@3 (passenger)": 1.0,
+    "R@3 (cargo)": 0.6364,
+    "R@3 (financial)": 0.5714,
+    "MRR@10": 0.7473,
+    "NDCG@3": 0.7943
+  },
+  {
+    "Mode": "Hybrid (RRF)",
+    "R@1 (all)": 0.6667,
+    "R@3 (all)": 0.9,
+    "R@3 (keyword)": 0.8571,
+    "R@3 (semantic)": 0.9375,
+    "R@3 (passenger)": 1.0,
+    "R@3 (cargo)": 0.8182,
+    "R@3 (financial)": 0.8571,
+    "MRR@10": 0.7708,
+    "NDCG@3": 0.8594
+  }
+]

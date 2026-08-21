@@ -1,0 +1,23 @@
+[
+  {
+    "Config": "No reranker",
+    "R@1": 0.6667,
+    "R@3": 0.9,
+    "NDCG@3": 0.8594,
+    "Added latency (ms)": 0.0
+  },
+  {
+    "Config": "+ Cross-encoder rerank (top-10 -> top-3/5)",
+    "R@1": 0.6667,
+    "R@3": 0.8667,
+    "NDCG@3": 0.8423,
+    "Added latency (ms)": 62.1
+  },
+  {
+    "Config": "+ Cross-encoder rerank (top-20 -> top-3/5)",
+    "R@1": 0.6667,
+    "R@3": 0.8333,
+    "NDCG@3": 0.8135,
+    "Added latency (ms)": 118.9
+  }
+]
