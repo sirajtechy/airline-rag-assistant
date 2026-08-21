@@ -1,0 +1,306 @@
+# Delta RAG — labelled evaluation set (Group 7)
+#
+# Built BEFORE any pipeline design decision was made, per EVALUATION_METHODOLOGY.md Part B.
+#
+# LABELLING CONTRACT
+# ------------------
+# Ground truth is deliberately recorded at a level that is invariant to the parser
+# and the chunking strategy, because Stage 1 and Stage 2 change chunk boundaries and
+# chunk IDs. Chunk-ID labels would be unusable across those ablations.
+#
+#   gold_doc       stable document id (see delta_rag.config.SOURCE_DOCS)
+#   gold_locators  PDF pages as "p<N>" (1-based PDF page index, agreed by all three
+#                  parsers), or XBRL concepts as "<prefix>:<ConceptName>"
+#   gold_span      VERBATIM text from the source, whitespace-normalised. This is the
+#                  answer-bearing evidence and drives graded relevance.
+#
+# Graded relevance for DCG@3/NDCG@3 is derived mechanically at scoring time
+# (see delta_rag.metrics.grade_chunk):
+#   3 = chunk contains gold_span            (answer-bearing)
+#   2 = chunk is in gold_doc at a gold locator, but does not contain the span
+#   1 = chunk is in gold_doc, elsewhere      (right document, wrong place)
+#   0 = chunk is from a different document
+#
+# query_type drives the Stage 5 keyword-vs-semantic breakdown:
+#   keyword  = phrased with terminology lifted from the document (favours BM25)
+#   semantic = phrased the way a real customer would ask (favours dense retrieval)
+
+version: 1
+name: delta_group7_eval_v1
+
+questions:
+  # ─────────────────────────── PASSENGER (Contract of Carriage) ───────────────
+  - id: P01
+    question: "What's Delta's policy on oversold flights?"
+    route: passenger
+    query_type: semantic
+    gold_doc: contract_of_carriage
+    gold_locators: ["p17"]
+    gold_span: "Delta reserves the right to sell more tickets for travel on each flight than there are seats available on the aircraft"
+    ideal_answer: "Delta overbooks flights because some passengers with confirmed reservations do not show up, so it may sell more tickets than there are seats. When this results in an oversold flight, Delta first asks for volunteers to give up their seats in exchange for compensation; only if there are not enough volunteers will it involuntarily deny boarding, following the boarding priority rules in Rule 20."
+
+  - id: P02
+    question: "What is the amount of involuntary denied boarding compensation when Delta arranges qualifying alternative transportation?"
+    route: passenger
+    query_type: keyword
+    gold_doc: contract_of_carriage
+    gold_locators: ["p19"]
+    gold_span: "Delta will pay denied boarding compensation in an amount equal to 200% of the fare"
+    ideal_answer: "If Delta arranges Qualifying Alternative Transportation, it pays 200% of the fare (including surcharges and air transportation taxes) to the passenger's next stopover or final destination, capped at $1,075.00."
+
+  - id: P03
+    question: "Can I get a refund on a non-refundable Delta ticket?"
+    route: passenger
+    query_type: semantic
+    gold_doc: contract_of_carriage
+    gold_locators: ["p21"]
+    gold_span: "Most tickets issued by Delta are nonrefundable"
+    ideal_answer: "Generally no. Most Delta tickets are nonrefundable and Delta will not refund a nonrefundable fare except where required by law or expressly stated in the Contract of Carriage. If you cancel before departure, the value of the unused portion (less applicable charges) may be applied toward future travel on Delta, and must be used within one year of the original ticket issue date. An exception applies if the passenger dies before travel, in which case the ticket is refunded to the estate on request."
+
+  - id: P04
+    question: "What is the time limit for requesting a refund from Delta?"
+    route: passenger
+    query_type: keyword
+    gold_doc: contract_of_carriage
+    gold_locators: ["p22"]
+    gold_span: "within one year of the original issue date of the ticket"
+    ideal_answer: "No refund will be issued unless Delta receives the refund request, and any unused coupons are surrendered, within one year of the original issue date of the ticket."
+
+  - id: P05
+    question: "If Delta bumps me and can't get me on a comparable replacement flight, how much do they owe me?"
+    route: passenger
+    query_type: semantic
+    gold_doc: contract_of_carriage
+    gold_locators: ["p19"]
+    gold_span: "an amount equal to 400% of the fare"
+    ideal_answer: "If Delta cannot arrange Qualifying Alternative Transportation, denied boarding compensation is 400% of the fare (including surcharges and air transportation taxes) to your next stopover or final destination, capped at $2,150.00."
+
+  - id: P06
+    question: "When and in what form does Delta pay involuntary denied boarding compensation?"
+    route: passenger
+    query_type: keyword
+    gold_doc: contract_of_carriage
+    gold_locators: ["p19"]
+    gold_span: "in cash or immediately negotiable check"
+    ideal_answer: "Delta pays involuntary denied boarding compensation on the day and at the place the denial of boarding occurred, in cash or immediately negotiable check. If the passenger's alternative transportation departs before payment can be made, Delta pays by mail or other means within 24 hours of the denied boarding."
+
+  - id: P07
+    question: "If my connection means changing airports in the same city, does Delta pay for me to get between them?"
+    route: passenger
+    query_type: semantic
+    gold_doc: contract_of_carriage
+    gold_locators: ["p4"]
+    gold_span: "transportation between those airports must be arranged by and at the expense of the passenger"
+    ideal_answer: "No. When a metropolitan area is served by more than one airport and you must connect between them, that transportation must be arranged by you and at your own expense. You must also claim and recheck your baggage."
+
+  - id: P08
+    question: "How does Delta define a service animal?"
+    route: passenger
+    query_type: keyword
+    gold_doc: contract_of_carriage
+    gold_locators: ["p5", "p6"]
+    gold_span: "Service Animals are defined as only dogs, regardless of breed"
+    ideal_answer: "Delta defines service animals as only dogs, regardless of breed, specifically trained to assist a person with a disability. They are carried without charge, are seated on the floor at the person's seat, and may not occupy a passenger seat."
+
+  - id: P09
+    question: "What happens if being denied boarding means I have to stay overnight somewhere?"
+    route: passenger
+    query_type: semantic
+    gold_doc: contract_of_carriage
+    gold_locators: ["p18"]
+    gold_span: "Delta will provide hotel accommodations to the passenger at no additional cost"
+    ideal_answer: "If the alternative transportation requires an overnight stay, Delta provides hotel accommodations at no additional cost. If no hotel accommodation is available, Delta issues a credit voucher for future Delta purchases worth roughly the local average contracted hotel rate, up to $100 USD."
+
+  - id: P10
+    question: "What is the deadline for an overcharge claim on a Delta ticket?"
+    route: passenger
+    query_type: keyword
+    gold_doc: contract_of_carriage
+    gold_locators: ["p22"]
+    gold_span: "more than forty five (45) days after the date of issue of the ticket"
+    ideal_answer: "No overcharge claim is valid and Delta has no liability if the claim is made more than forty-five (45) days after the date the ticket was issued."
+
+  - id: P11
+    question: "Who gets priority to stay on the plane when a Delta flight is oversold?"
+    route: passenger
+    query_type: semantic
+    gold_doc: contract_of_carriage
+    gold_locators: ["p17", "p18"]
+    gold_span: "Passengers holding tickets for confirmed space in the First or Business class cabin"
+    ideal_answer: "Delta accommodates passengers in priority order: first, passengers in the First or Business cabin, Diamond/Platinum/Gold Medallion SkyMiles members and corporate-travel-agreement ticket holders; then passengers holding boarding passes who checked in on time; then passengers without boarding passes, ordered by irregular-operation rebooking, Silver Medallion, SkyTeam Elite/Elite Plus, and then no elite status. Delta may also accommodate passengers with disabilities, unaccompanied minors, aged or infirm passengers, and active U.S. Armed Forces members on orders outside these priorities."
+
+  - id: P12
+    question: "How long does a credit card refund take from Delta?"
+    route: passenger
+    query_type: keyword
+    gold_doc: contract_of_carriage
+    gold_locators: ["p22"]
+    gold_span: "typically within seven business days"
+    ideal_answer: "Tickets paid for by credit card are refunded to the credit card account used for the purchase, typically within seven business days of Delta's initial receipt of the refund request."
+
+  # ─────────────────────────── CARGO (Shipping Rules Tariff) ──────────────────
+  - id: C01
+    question: "What are the rules for shipping cargo domestically with Delta?"
+    route: cargo
+    query_type: semantic
+    gold_doc: cargo_tariff
+    gold_locators: ["p3"]
+    gold_span: "For transportation between points served within the United States by Delta"
+    ideal_answer: "Delta's U.S.-Domestic Shipping Rules & Tariffs govern cargo moving between points served by Delta within the United States, and between the U.S.A. and points in Canada, as well as transportation performed jointly with other carriers under applicable joint rates. Transportation is subject to the rules, regulations and charges in effect on the date the shipment is accepted by the originating carrier."
+
+  - id: C02
+    question: "What are the packaging requirements for shipping cargo with Delta?"
+    route: cargo
+    query_type: keyword
+    gold_doc: cargo_tariff
+    gold_locators: ["p5"]
+    gold_span: "Shipments must be prepared or packed to ensure safe transportation with ordinary care in handling"
+    ideal_answer: "Shipments must be packed to ensure safe transportation with ordinary care in handling. Articles susceptible to damage must be adequately protected by proper packing and marked or labelled appropriately. Each piece must be legibly and durably marked with the shipper's and consignee's name and address. Pieces over floor-bearing limits must be secured to a suitable skid or base, liquids and fragile or perishable articles may not be packed with wearing apparel, and hazardous materials must comply with IATA dangerous goods regulations."
+
+  - id: C03
+    question: "How do I need to label each box so Delta Cargo will accept it?"
+    route: cargo
+    query_type: semantic
+    gold_doc: cargo_tariff
+    gold_locators: ["p5"]
+    gold_span: "Each piece of the shipment must be legibly and durably marked with the name and address of the shipper and consignee"
+    ideal_answer: "Every piece in the shipment must be legibly and durably marked with the name and address of both the shipper and the consignee."
+
+  - id: C04
+    question: "What documentation is needed to ship domestically with Delta Cargo?"
+    route: cargo
+    query_type: keyword
+    gold_doc: cargo_tariff
+    gold_locators: ["p10"]
+    gold_span: "The shipper shall prepare and present a non-negotiable air waybill"
+    ideal_answer: "The shipper must prepare and present a non-negotiable air waybill (or other non-negotiable shipping document issued by the carrier) with each shipment, containing all particulars necessary for transport. If the shipper fails to present one, Delta will prepare a non-negotiable air waybill subject to the tariffs in effect on the date the shipment is accepted. Contents must be described accurately and specifically, and the number of pieces must be stated."
+
+  - id: C05
+    question: "How long do I have to file a claim if my Delta Cargo shipment is damaged?"
+    route: cargo
+    query_type: semantic
+    gold_doc: cargo_tariff
+    gold_locators: ["p19"]
+    gold_span: "within a period of sixty (60) days after the date of acceptance of the shipment"
+    ideal_answer: "All claims, including overcharge claims, must be made in writing to the originating or delivering carrier within sixty (60) days after the date the originating carrier accepted the shipment. The first day of that period is the day after acceptance. The written claim must identify the shipment, the amount claimed and the nature of the claim (loss, damage or delay) with particularity. This does not apply to or from Canada."
+
+  - id: C06
+    question: "Damage discovered after delivery and after a clear receipt was given - what is the reporting deadline?"
+    route: cargo
+    query_type: keyword
+    gold_doc: cargo_tariff
+    gold_locators: ["p19"]
+    gold_span: "within fifteen (15) days after delivery of the shipment"
+    ideal_answer: "Damage or loss discovered by the consignee after delivery, once a clear receipt has been given, must be reported in writing to the delivering carrier at destination within fifteen (15) days after delivery. The consignee must hold the shipping container and contents in the same condition while awaiting the carrier's inspection."
+
+  - id: C07
+    question: "Can I ship jewellery or gold bullion with Delta Cargo?"
+    route: cargo
+    query_type: semantic
+    gold_doc: cargo_tariff
+    gold_locators: ["p10"]
+    gold_span: "articles of extraordinary value as defined in Rule G2 will be accepted for transportation only in Air Express service"
+    ideal_answer: "Yes, but only in Air Express service. Jewellery, watches, gold and silver bullion, gems, money and similar items are 'articles of extraordinary value' under Rule G2, and shipments containing them are accepted only in Air Express service. They must also be packed in sealed outside containers."
+
+  - id: C08
+    question: "Are shipments containing wet ice acceptable to Delta Cargo?"
+    route: cargo
+    query_type: keyword
+    gold_doc: cargo_tariff
+    gold_locators: ["p8"]
+    gold_span: "All shipments containing wet ice"
+    ideal_answer: "No. Under Rule G20 (Shipments NOT Acceptable), all shipments containing wet ice are unacceptable, with an exception for DASH shipments of human blood or human organs."
+
+  - id: C09
+    question: "How does Delta require coins to be packed for shipping?"
+    route: cargo
+    query_type: semantic
+    gold_doc: cargo_tariff
+    gold_locators: ["p5"]
+    gold_span: "Money in coin form must be packed in sealed metal or wooden boxes"
+    ideal_answer: "Money in coin form must be packed in sealed metal or wooden boxes. Those boxes must be at least 1,728 cubic inches (one cubic foot), strong enough to allow other freight to be stacked around and on top of them, and have a minimum top-loading capability of 75 pounds per square foot."
+
+  - id: C10
+    question: "How are fractions of a pound handled when Delta computes cargo weight?"
+    route: cargo
+    query_type: keyword
+    gold_doc: cargo_tariff
+    gold_locators: ["p5"]
+    gold_span: "Fractions of a pound will be rounded up to the next higher pound"
+    ideal_answer: "Fractions of a pound are rounded up to the next higher pound, and fractions of a kilogram are rounded up to the next higher half kilogram."
+
+  - id: C11
+    question: "How long does my packaging need to protect the goods for on a domestic shipment?"
+    route: cargo
+    query_type: semantic
+    gold_doc: cargo_tariff
+    gold_locators: ["p12"]
+    gold_span: "at least 48 hours domestically and 72 hours internationally"
+    ideal_answer: "The shipper is responsible for packing the shipment to withstand a total time of at least 48 hours domestically and 72 hours internationally, measured from normal tender time for that city's outbound flights until the consignee is notified of the shipment's arrival."
+
+  # ─────────────────────────── FINANCIAL (SEC XBRL 10-K) ──────────────────────
+  - id: F01
+    question: "What's Delta's total operating revenue in their latest 10-K?"
+    route: financial
+    query_type: semantic
+    gold_doc: financial_xbrl
+    gold_locators: ["us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax"]
+    gold_span: "Consolidated (no segment breakdown), for the period 2025-01-01 to 2025-12-31: USD 63,364,000,000"
+    ideal_answer: "Delta reported total consolidated revenue of USD 63,364,000,000 (about $63.36 billion) for the fiscal year ended December 31, 2025, up from $61,643,000,000 in 2024."
+
+  - id: F02
+    question: "What was Delta's net income for fiscal year 2025?"
+    route: financial
+    query_type: keyword
+    gold_doc: financial_xbrl
+    gold_locators: ["us-gaap:NetIncomeLoss"]
+    gold_span: "for the period 2025-01-01 to 2025-12-31: USD 5,005,000,000"
+    ideal_answer: "Delta reported net income attributable to the parent of USD 5,005,000,000 (about $5.0 billion) for fiscal year 2025, compared with $3,457,000,000 in 2024."
+
+  # F03 is a deliberate routing trap: it sounds like a cargo-tariff question, but
+  # cargo *revenue* is a financial fact, not a shipping rule.
+  - id: F03
+    question: "How much revenue did Delta make from shipping cargo last year?"
+    route: financial
+    query_type: semantic
+    gold_doc: financial_xbrl
+    gold_locators: ["us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax"]
+    gold_span: "Cargo and Freight, for the period 2025-01-01 to 2025-12-31: USD 900,000,000"
+    ideal_answer: "Delta reported cargo and freight revenue of USD 900,000,000 (about $900 million) for the fiscal year ended December 31, 2025, up from $822,000,000 in 2024 and $723,000,000 in 2023."
+    notes: "Routing hard-negative: lexically cargo-flavoured, but the answer lives in the financial XBRL, not the cargo tariff."
+
+  - id: F04
+    question: "What was Delta's diluted earnings per share?"
+    route: financial
+    query_type: keyword
+    gold_doc: financial_xbrl
+    gold_locators: ["us-gaap:EarningsPerShareDiluted"]
+    gold_span: "for the period 2025-01-01 to 2025-12-31: USD 7.66"
+    ideal_answer: "Delta reported diluted earnings per share of $7.66 for the fiscal year ended December 31, 2025."
+
+  - id: F05
+    question: "How big is Delta's balance sheet - what are their total assets?"
+    route: financial
+    query_type: semantic
+    gold_doc: financial_xbrl
+    gold_locators: ["us-gaap:Assets"]
+    gold_span: "as of 2025-12-31: USD 81,317,000,000"
+    ideal_answer: "Delta reported total assets of USD 81,317,000,000 (about $81.3 billion) as of December 31, 2025."
+
+  - id: F06
+    question: "What is Delta's total stockholders equity?"
+    route: financial
+    query_type: keyword
+    gold_doc: financial_xbrl
+    gold_locators: ["us-gaap:StockholdersEquity"]
+    gold_span: "as of 2025-12-31: USD 20,853,000,000"
+    ideal_answer: "Delta reported total stockholders' equity of USD 20,853,000,000 (about $20.85 billion) as of December 31, 2025."
+
+  - id: F07
+    question: "How much cash does Delta have on hand?"
+    route: financial
+    query_type: semantic
+    gold_doc: financial_xbrl
+    gold_locators: ["us-gaap:CashAndCashEquivalentsAtCarryingValue"]
+    gold_span: "as of 2025-12-31: USD 4,310,000,000"
+    ideal_answer: "Delta reported cash and cash equivalents of USD 4,310,000,000 (about $4.31 billion) as of December 31, 2025."

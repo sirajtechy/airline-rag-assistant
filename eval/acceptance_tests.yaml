@@ -1,0 +1,116 @@
+# The 5 graded acceptance tests from REQUIREMENT.md section 6 (30% of the grade),
+# plus additional guardrail probes covering the section 5 requirements.
+#
+# behaviour:
+#   answer  -> must answer from the named document, citing it
+#   refuse  -> must decline; out of scope (another airline / not in the corpus)
+#   deflect -> must explain it only handles general policy, not live account data
+#
+# must_include / must_not_include are checked case-insensitively against the
+# final answer text.
+
+version: 1
+name: delta_group7_acceptance_v1
+
+tests:
+  # ── The 5 required acceptance tests ────────────────────────────────────────
+  - id: A1
+    question: "What's Delta's policy on oversold flights?"
+    behaviour: answer
+    expect_route: passenger
+    expect_doc: contract_of_carriage
+    must_include: ["oversold"]
+    must_not_include: ["jetblue", "united", "american airlines"]
+    rationale: "REQUIREMENT #1 — must answer from the Contract of Carriage."
+
+  - id: A2
+    question: "What are the rules for shipping cargo domestically with Delta?"
+    behaviour: answer
+    expect_route: cargo
+    expect_doc: cargo_tariff
+    must_include: []
+    must_not_include: ["jetblue", "united", "american airlines"]
+    rationale: "REQUIREMENT #2 — must answer from the Cargo tariff."
+
+  - id: A3
+    question: "Can I get a refund on a non-refundable Delta ticket?"
+    behaviour: answer
+    expect_route: passenger
+    expect_doc: contract_of_carriage
+    must_include: ["nonrefundable"]
+    must_not_include: []
+    rationale: "REQUIREMENT #3 — must answer from the Contract of Carriage."
+
+  - id: A4
+    question: "What's JetBlue's baggage policy?"
+    behaviour: refuse
+    expect_route: null
+    expect_doc: null
+    must_include: ["delta"]
+    must_not_include: []
+    rationale: "REQUIREMENT #4 — another airline is out of scope; must decline."
+
+  - id: A5
+    question: "What's the status of my flight tomorrow?"
+    behaviour: deflect
+    expect_route: null
+    expect_doc: null
+    must_include: []
+    must_not_include: []
+    rationale: "REQUIREMENT #5 — needs live booking access; must explain the limitation."
+
+  # ── Additional guardrail probes (REQUIREMENT section 5) ───────────────────
+  - id: G1
+    question: "What is United Airlines' policy on denied boarding compensation?"
+    behaviour: refuse
+    expect_route: null
+    expect_doc: null
+    must_include: ["delta"]
+    must_not_include: []
+    rationale: "Out-of-scope carrier phrased with in-corpus terminology (denied boarding)."
+
+  - id: G2
+    question: "Can you cancel my booking and refund my card?"
+    behaviour: deflect
+    expect_route: null
+    expect_doc: null
+    must_include: []
+    must_not_include: []
+    rationale: "Transactional request needing account access, not a policy question."
+
+  - id: G3
+    question: "What is Delta's pet cargo fee for shipping a dog to London in euros?"
+    behaviour: refuse
+    expect_route: null
+    expect_doc: null
+    must_include: []
+    must_not_include: ["eur", "€"]
+    rationale: "Not answerable: the tariff is U.S.-domestic and publishes no such fee. Must not invent one."
+
+  - id: G4
+    question: "How much is Delta's checked bag fee for a third bag on a transatlantic flight?"
+    behaviour: refuse
+    expect_route: null
+    expect_doc: null
+    must_include: []
+    must_not_include: []
+    rationale: "Contract of Carriage is domestic-only; must not fabricate an international fee."
+
+  # ── Cross-route disambiguation (this group's core graded skill) ───────────
+  - id: R1
+    question: "How much revenue did Delta make from shipping cargo last year?"
+    behaviour: answer
+    expect_route: financial
+    expect_doc: financial_xbrl
+    must_include: ["900"]
+    must_not_include: []
+    rationale: "Lexically cargo-flavoured but the answer is a financial fact — must not route to the cargo tariff."
+
+  - id: R2
+    question: "What is Delta's liability limit for a damaged shipment?"
+    behaviour: answer
+    expect_route: cargo
+    expect_doc: cargo_tariff
+    must_include: []
+    must_not_include: []
+    rationale: "'Liability' appears in both the passenger and cargo documents — must route to cargo."

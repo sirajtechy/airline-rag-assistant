@@ -1,0 +1,50 @@
+# Delta Air Lines Customer Support RAG — Group 7 capstone
+# Exact resolved versions are captured in requirements.lock.txt (pip freeze).
+
+# ── Core orchestration (course stack, notebooks 01–02) ──
+langchain
+langchain-core
+langchain-community
+langchain-text-splitters
+langchain-openai
+python-dotenv
+
+# ── Stage 1: parsing ablation (3 real alternatives) ──
+pypdf
+pdfplumber
+pymupdf
+lxml            # XBRL financial route
+
+# ── Stage 2: chunking ──
+tiktoken
+
+# ── Stage 3: embedding model ablation ──
+sentence-transformers
+scikit-learn
+
+# ── Stage 4: vector DB ablation ──
+faiss-cpu
+chromadb
+
+# ── Stage 5/6: sparse + hybrid retrieval ──
+bm25s
+PyStemmer
+
+# ── Stage 8 + generation eval ──
+ragas
+deepeval
+
+# ── Reporting / analysis ──
+pandas
+matplotlib
+tabulate
+
+# ── Backend API ──
+fastapi
+uvicorn[standard]
+pydantic
+pydantic-settings
+
+# ── Tests ──
+pytest
+hypothesis
