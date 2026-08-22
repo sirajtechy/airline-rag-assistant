@@ -18,7 +18,12 @@ import unicodedata
 from dataclasses import dataclass, field
 
 from .config import SOURCE_DOCS
-from .parsing import parse_pdf
+from .parsing import (
+    find_running_lines,
+    is_front_matter,
+    parse_pdf,
+    strip_running_lines,
+)
 from .xbrl import parse_xbrl
 
 
@@ -51,18 +56,35 @@ def normalise_for_match(text: str) -> str:
     return text.strip().lower()
 
 
-def load_corpus(parser: str = "pymupdf") -> list[SourceUnit]:
-    """Load every source document as a flat list of locator-addressed units."""
+def load_corpus(parser: str = "pymupdf", clean: bool = True) -> list[SourceUnit]:
+    """Load every source document as a flat list of locator-addressed units.
+
+    ``clean`` drops cover/contents pages and strips repeated running headers and
+    footers. Both are measured interventions rather than assumptions — see
+    reports/results/stage0b_boilerplate.md — and can be switched off to reproduce
+    the uncleaned baseline.
+    """
     units: list[SourceUnit] = []
     for doc_id, spec in SOURCE_DOCS.items():
         if spec["kind"] == "pdf":
-            for page in parse_pdf(spec["path"], doc_id, spec["business_line"], parser):
+            pages = parse_pdf(spec["path"], doc_id, spec["business_line"], parser)
+            running = (
+                find_running_lines([p.text for p in pages]) if clean else set()
+            )
+            for page in pages:
+                text = page.text
+                if clean:
+                    if is_front_matter(text):
+                        continue
+                    text = strip_running_lines(text, running)
+                    if not text.strip():
+                        continue
                 units.append(
                     SourceUnit(
                         doc_id=doc_id,
                         business_line=spec["business_line"],
                         locator=f"p{page.page}",
-                        text=page.text,
+                        text=text,
                         title=spec["title"],
                         meta={"page": page.page, "parser": parser},
                     )

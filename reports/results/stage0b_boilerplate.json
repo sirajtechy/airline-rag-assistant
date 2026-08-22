@@ -1,0 +1,46 @@
+[
+  {
+    "Preprocessing": "A. Raw pages (front matter + headers kept)",
+    "Mode": "sparse",
+    "PDF pages": 45,
+    "R@1": 0.6667,
+    "R@3": 0.7667,
+    "MRR@10": 0.7473,
+    "NDCG@3": 0.7943,
+    "R@3 (cargo)": 0.6364,
+    "R@3 (passenger)": 1.0
+  },
+  {
+    "Preprocessing": "A. Raw pages (front matter + headers kept)",
+    "Mode": "hybrid",
+    "PDF pages": 45,
+    "R@1": 0.6667,
+    "R@3": 0.9,
+    "MRR@10": 0.7708,
+    "NDCG@3": 0.8594,
+    "R@3 (cargo)": 0.8182,
+    "R@3 (passenger)": 1.0
+  },
+  {
+    "Preprocessing": "B. Front matter dropped, running headers stripped",
+    "Mode": "sparse",
+    "PDF pages": 43,
+    "R@1": 0.6667,
+    "R@3": 0.8333,
+    "MRR@10": 0.7567,
+    "NDCG@3": 0.8486,
+    "R@3 (cargo)": 0.7273,
+    "R@3 (passenger)": 1.0
+  },
+  {
+    "Preprocessing": "B. Front matter dropped, running headers stripped",
+    "Mode": "hybrid",
+    "PDF pages": 43,
+    "R@1": 0.7,
+    "R@3": 0.9,
+    "MRR@10": 0.7981,
+    "NDCG@3": 0.8874,
+    "R@3 (cargo)": 0.8182,
+    "R@3 (passenger)": 1.0
+  }
+]

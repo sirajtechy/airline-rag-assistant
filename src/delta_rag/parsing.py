@@ -96,6 +96,59 @@ def parse_pdf(path: Path, doc_id: str, business_line: str, parser: str) -> list[
 
 
 # ── Stage 1 quality measurement ───────────────────────────────────────────────
+# ── Front matter and running-header removal ──────────────────────────────────
+# A table-of-contents line is a heading followed by dotted leaders and a page
+# number: "G32 Limit of Liability .......................... 10".
+_TOC_LINE = re.compile(r"\.{4,}\s*\d+\s*$")
+# "Page 17 of 23" style footers, and the standalone page numbers around them.
+_PAGE_FOOTER = re.compile(r"^\s*(page\s+\d+\s+of\s+\d+|\d{1,3})\s*$", re.I)
+
+
+def is_front_matter(text: str, toc_ratio: float = 0.30, min_lines: int = 5) -> bool:
+    """True for cover and table-of-contents pages.
+
+    These pages are actively harmful to retrieval rather than merely useless:
+    a contents page lists every rule title in the document, so it matches almost
+    any topical query with high lexical density while containing no answer at all.
+    Both tariffs put their contents on pages 1-2, and no gold answer span lives
+    there.
+    """
+    lines = [ln for ln in text.splitlines() if ln.strip()]
+    if len(lines) < min_lines:
+        return True  # cover pages: a handful of title lines and nothing else
+    toc_lines = sum(bool(_TOC_LINE.search(ln)) for ln in lines)
+    return toc_lines / len(lines) >= toc_ratio
+
+
+def find_running_lines(pages: list[str], threshold: float = 0.40) -> set[str]:
+    """Lines repeated near the top/bottom of many pages, i.e. headers/footers.
+
+    The Contract of Carriage stamps "Delta Domestic General Rules Tariff" on all
+    23 pages. Left in place, that phrase is indexed 23 times and makes the
+    passenger document a strong lexical match for any query containing "domestic",
+    "rules" or "tariff" — including cargo shipping questions.
+    """
+    from collections import Counter
+
+    counts: Counter[str] = Counter()
+    for text in pages:
+        lines = [ln.strip() for ln in text.splitlines() if ln.strip()]
+        for line in lines[:3] + lines[-3:]:
+            # Mask digits so "Page 4 of 23" and "Page 17 of 23" collapse together.
+            counts[re.sub(r"\d+", "#", line).lower()] += 1
+    cutoff = max(2, int(len(pages) * threshold))
+    return {key for key, n in counts.items() if n >= cutoff}
+
+
+def strip_running_lines(text: str, running: set[str]) -> str:
+    kept = [
+        ln for ln in text.splitlines()
+        if re.sub(r"\d+", "#", ln.strip()).lower() not in running
+        and not _PAGE_FOOTER.match(ln)
+    ]
+    return "\n".join(kept).strip()
+
+
 def page_is_clean(text: str, min_chars: int = 200, max_bad_ratio: float = 0.001) -> bool:
     """Heuristic used for the 'clean text %' column of the Stage 1 table.
 

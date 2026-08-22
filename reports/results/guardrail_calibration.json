@@ -1,0 +1,104 @@
+[
+  {
+    "Threshold": 0.55,
+    "Answerable correctly answered": 1.0,
+    "Unanswerable correctly refused": 0.0,
+    "Sum": 1.0
+  },
+  {
+    "Threshold": 0.57,
+    "Answerable correctly answered": 1.0,
+    "Unanswerable correctly refused": 0.0,
+    "Sum": 1.0
+  },
+  {
+    "Threshold": 0.59,
+    "Answerable correctly answered": 1.0,
+    "Unanswerable correctly refused": 0.125,
+    "Sum": 1.125
+  },
+  {
+    "Threshold": 0.61,
+    "Answerable correctly answered": 1.0,
+    "Unanswerable correctly refused": 0.125,
+    "Sum": 1.125
+  },
+  {
+    "Threshold": 0.63,
+    "Answerable correctly answered": 1.0,
+    "Unanswerable correctly refused": 0.125,
+    "Sum": 1.125
+  },
+  {
+    "Threshold": 0.65,
+    "Answerable correctly answered": 1.0,
+    "Unanswerable correctly refused": 0.125,
+    "Sum": 1.125
+  },
+  {
+    "Threshold": 0.67,
+    "Answerable correctly answered": 1.0,
+    "Unanswerable correctly refused": 0.25,
+    "Sum": 1.25
+  },
+  {
+    "Threshold": 0.69,
+    "Answerable correctly answered": 0.9333,
+    "Unanswerable correctly refused": 0.375,
+    "Sum": 1.3083
+  },
+  {
+    "Threshold": 0.71,
+    "Answerable correctly answered": 0.9333,
+    "Unanswerable correctly refused": 0.5,
+    "Sum": 1.4333
+  },
+  {
+    "Threshold": 0.73,
+    "Answerable correctly answered": 0.7333,
+    "Unanswerable correctly refused": 1.0,
+    "Sum": 1.7333
+  },
+  {
+    "Threshold": 0.75,
+    "Answerable correctly answered": 0.5,
+    "Unanswerable correctly refused": 1.0,
+    "Sum": 1.5
+  },
+  {
+    "Threshold": 0.77,
+    "Answerable correctly answered": 0.4333,
+    "Unanswerable correctly refused": 1.0,
+    "Sum": 1.4333
+  },
+  {
+    "Threshold": 0.79,
+    "Answerable correctly answered": 0.3667,
+    "Unanswerable correctly refused": 1.0,
+    "Sum": 1.3667
+  },
+  {
+    "Threshold": 0.81,
+    "Answerable correctly answered": 0.2333,
+    "Unanswerable correctly refused": 1.0,
+    "Sum": 1.2333
+  },
+  {
+    "Threshold": 0.83,
+    "Answerable correctly answered": 0.1333,
+    "Unanswerable correctly refused": 1.0,
+    "Sum": 1.1333
+  },
+  {
+    "Threshold": 0.85,
+    "Answerable correctly answered": 0.0333,
+    "Unanswerable correctly refused": 1.0,
+    "Sum": 1.0333
+  },
+  {
+    "Threshold": 0.87,
+    "Answerable correctly answered": 0.0333,
+    "Unanswerable correctly refused": 1.0,
+    "Sum": 1.0333
+  }
+]

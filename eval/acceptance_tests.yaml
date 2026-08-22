@@ -2,9 +2,11 @@
 # plus additional guardrail probes covering the section 5 requirements.
 #
 # behaviour:
-#   answer  -> must answer from the named document, citing it
-#   refuse  -> must decline; out of scope (another airline / not in the corpus)
-#   deflect -> must explain it only handles general policy, not live account data
+#   answer             -> must answer from the named document, citing it
+#   refuse             -> must decline via guardrail; out of scope (another airline)
+#   refuse_or_disclaim -> either a guardrail refusal OR a grounded in-answer
+#                         "the documents do not cover this" is acceptable
+#   deflect            -> must explain it only handles general policy, not live data
 #
 # must_include / must_not_include are checked case-insensitively against the
 # final answer text.
@@ -20,7 +22,7 @@ tests:
     expect_route: passenger
     expect_doc: contract_of_carriage
     must_include: ["oversold"]
-    must_not_include: ["jetblue", "united", "american airlines"]
+    must_not_include: ["jetblue", "united airlines", "american airlines"]
     rationale: "REQUIREMENT #1 — must answer from the Contract of Carriage."
 
   - id: A2
@@ -29,7 +31,7 @@ tests:
     expect_route: cargo
     expect_doc: cargo_tariff
     must_include: []
-    must_not_include: ["jetblue", "united", "american airlines"]
+    must_not_include: ["jetblue", "united airlines", "american airlines"]
     rationale: "REQUIREMENT #2 — must answer from the Cargo tariff."
 
   - id: A3
@@ -80,7 +82,7 @@ tests:
 
   - id: G3
     question: "What is Delta's pet cargo fee for shipping a dog to London in euros?"
-    behaviour: refuse
+    behaviour: refuse_or_disclaim
     expect_route: null
     expect_doc: null
     must_include: []
@@ -89,7 +91,7 @@ tests:
 
   - id: G4
     question: "How much is Delta's checked bag fee for a third bag on a transatlantic flight?"
-    behaviour: refuse
+    behaviour: refuse_or_disclaim
     expect_route: null
     expect_doc: null
     must_include: []

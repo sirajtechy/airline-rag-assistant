@@ -143,6 +143,10 @@ class Retriever:
         self.store = store
         self.bm25 = bm25
         self.build_seconds: dict[str, float] = {}
+        # Document vectors computed at build time, kept so the guardrail's
+        # confidence check can look them up instead of re-embedding chunk text on
+        # every single query.
+        self.doc_vectors: dict[str, np.ndarray] = {}
 
     @property
     def supports_dense(self) -> bool:
@@ -202,6 +206,9 @@ def build_retriever(
         embedded = embedder.encode_documents([c.text for c in chunks])
         retriever.build_seconds["embed"] = embedded.seconds
         retriever.build_seconds["index"] = store.build(chunks, embedded.vectors)
+        retriever.doc_vectors = {
+            c.chunk_id: v for c, v in zip(chunks, embedded.vectors)
+        }
 
     if with_sparse:
         bm25 = BM25Retriever()

@@ -1,0 +1,101 @@
+[
+  {
+    "#": "A1",
+    "Question": "What's Delta's policy on oversold flights?",
+    "Expected": "answer",
+    "Route": "passenger",
+    "Blocked": "no",
+    "Result": "PASS",
+    "Detail": ""
+  },
+  {
+    "#": "A2",
+    "Question": "What are the rules for shipping cargo domestically with Delta?",
+    "Expected": "answer",
+    "Route": "cargo",
+    "Blocked": "no",
+    "Result": "PASS",
+    "Detail": ""
+  },
+  {
+    "#": "A3",
+    "Question": "Can I get a refund on a non-refundable Delta ticket?",
+    "Expected": "answer",
+    "Route": "passenger",
+    "Blocked": "no",
+    "Result": "PASS",
+    "Detail": ""
+  },
+  {
+    "#": "A4",
+    "Question": "What's JetBlue's baggage policy?",
+    "Expected": "refuse",
+    "Route": "-",
+    "Blocked": "yes",
+    "Result": "PASS",
+    "Detail": ""
+  },
+  {
+    "#": "A5",
+    "Question": "What's the status of my flight tomorrow?",
+    "Expected": "deflect",
+    "Route": "-",
+    "Blocked": "yes",
+    "Result": "PASS",
+    "Detail": ""
+  },
+  {
+    "#": "G1",
+    "Question": "What is United Airlines' policy on denied boarding compensation?",
+    "Expected": "refuse",
+    "Route": "-",
+    "Blocked": "yes",
+    "Result": "PASS",
+    "Detail": ""
+  },
+  {
+    "#": "G2",
+    "Question": "Can you cancel my booking and refund my card?",
+    "Expected": "deflect",
+    "Route": "-",
+    "Blocked": "yes",
+    "Result": "PASS",
+    "Detail": ""
+  },
+  {
+    "#": "G3",
+    "Question": "What is Delta's pet cargo fee for shipping a dog to London in euros?",
+    "Expected": "refuse_or_disclaim",
+    "Route": "cargo",
+    "Blocked": "no",
+    "Result": "PASS",
+    "Detail": ""
+  },
+  {
+    "#": "G4",
+    "Question": "How much is Delta's checked bag fee for a third bag on a transatlantic flight?",
+    "Expected": "refuse_or_disclaim",
+    "Route": "passenger",
+    "Blocked": "no",
+    "Result": "PASS",
+    "Detail": ""
+  },
+  {
+    "#": "R1",
+    "Question": "How much revenue did Delta make from shipping cargo last year?",
+    "Expected": "answer",
+    "Route": "financial",
+    "Blocked": "no",
+    "Result": "PASS",
+    "Detail": ""
+  },
+  {
+    "#": "R2",
+    "Question": "What is Delta's liability limit for a damaged shipment?",
+    "Expected": "answer",
+    "Route": "passenger",
+    "Blocked": "no",
+    "Result": "FAIL",
+    "Detail": "routed to passenger, expected cargo"
+  }
+]
