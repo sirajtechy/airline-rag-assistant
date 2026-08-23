@@ -131,11 +131,26 @@ def stage3(cfg: PipelineConfig) -> str:
         rows.append(row)
 
     best = max(rows, key=lambda r: (r["R@3"], r["MRR@10"]))
+    top_r3 = max(r["R@3"] for r in rows)
+    tied = [r["Key"] for r in rows if r["R@3"] == top_r3]
+    tie_note = (
+        f"\n\n**This is a near-tie, not a clear win.** {len(tied)} of the "
+        f"{len(rows)} candidates ({', '.join(tied)}) share the top R@3 of "
+        f"{top_r3:.4f}, and they are separated only on the secondary metrics. "
+        "Note this contradicts an earlier run of this same table, where bge-small led "
+        "MiniLM by +0.1333 R@3 — that gap existed **before** the front-matter and "
+        "running-header cleaning in Stage 0b. Removing the boilerplate that was "
+        "polluting retrieval made the choice of embedding model substantially less "
+        "important, which is itself a result worth recording: fixing the corpus "
+        "reduced the leverage of a hyperparameter."
+        if len(tied) > 1 else ""
+    )
     save_stage(
         "stage3_embeddings", "Stage 3 — Embedding model", rows,
         notes=(
             f"Winner: **{best['Key']}** (R@3 = {best['R@3']:.4f}, "
-            f"MRR@10 = {best['MRR@10']:.4f}, {best['Latency (ms/query)']} ms/query).\n\n"
+            f"MRR@10 = {best['MRR@10']:.4f}, {best['Latency (ms/query)']} ms/query)."
+            + tie_note + "\n\n"
             "`bge-small` and `nomic` are asymmetric models: they are trained to embed "
             "queries and passages with different instruction prefixes. Those prefixes "
             "are applied here (`Represent this sentence for searching relevant "
@@ -253,27 +268,45 @@ def stage6(cfg: PipelineConfig) -> tuple[str, float]:
     rrf_tied = any(r["alpha"] is None for r in tied)
     fusion, alpha = ("rrf", 0.5) if rrf_tied else ("weighted", best_weighted["alpha"])
 
+    # The written verdict must follow the measurement, not a pre-written story.
+    sweep = " -> ".join(
+        f"{r['R@3']:.4f}" for r in rows if r["alpha"] is not None
+    )
+    alphas = ", ".join(str(r["alpha"]) for r in rows if r["alpha"] is not None)
+    margin = best_weighted["R@3"] - rrf_row["R@3"]
+    questions = abs(margin) * 30
+
+    if rrf_tied:
+        verdict = (
+            f"**Selected: Reciprocal Rank Fusion (k=60).** RRF and weighted linear at "
+            f"alpha = {best_weighted['alpha']} tie exactly on R@3 "
+            f"({rrf_row['R@3']:.4f}), then split the secondary metrics by less than "
+            f"0.02 — under one question out of 30. Neither gap is real at this "
+            f"resolution, so the tie is broken on robustness: RRF has no hyperparameter "
+            f"to overfit and is invariant to the two retrievers' score scales."
+        )
+    else:
+        verdict = (
+            f"**Selected: weighted linear at alpha = {best_weighted['alpha']}** "
+            f"(R@3 = {best_weighted['R@3']:.4f}, MRR@10 = {best_weighted['MRR@10']:.4f}, "
+            f"NDCG@3 = {best_weighted['NDCG@3']:.4f}), ahead of RRF "
+            f"(R@3 = {rrf_row['R@3']:.4f}).\n\n"
+            f"**The margin is {margin:+.4f} R@3, which on 30 questions is "
+            f"{questions:.0f} question.** That is the resolution limit of this eval set, "
+            f"so the win is real but weakly evidenced."
+        )
+
     save_stage(
         "stage6_fusion", "Stage 6 — Hybrid merge method and weighting", rows,
         notes=(
-            f"**Selected: Reciprocal Rank Fusion (k=60).** RRF and weighted linear at "
-            f"alpha = {best_weighted['alpha']} tie exactly on R@3 "
-            f"({rrf_row['R@3']:.4f}). They then split the secondary metrics: weighted "
-            f"leads MRR@10 by {best_weighted['MRR@10'] - rrf_row['MRR@10']:+.4f} while "
-            f"RRF leads NDCG@3 by {rrf_row['NDCG@3'] - best_weighted['NDCG@3']:+.4f}.\n\n"
-            "**Neither gap is real.** With 30 questions a single question is worth "
-            "0.0333 of R@3, so differences of ~0.02 on a secondary metric are smaller "
-            "than the resolution of this eval set. Declaring a winner on that margin "
-            "would be reading noise.\n\n"
-            "The tie is therefore broken on robustness, and the alpha sweep itself is "
-            "the evidence: R@3 goes 0.8333 -> 0.8333 -> 0.9000 -> 0.8333 -> 0.8667 across "
-            "alpha = 0.2 -> 0.8. That curve is **non-monotonic and spiky**. If alpha were "
+            verdict + "\n\n"
+            f"**The alpha sweep is the reason for caution.** Across alpha = {alphas} "
+            f"the R@3 curve runs {sweep} — **non-monotonic and spiky**. If alpha were "
             "capturing a real property of the corpus the curve would be smooth, so the "
-            "peak at 0.5 is far more likely to be a coincidence of these 30 questions "
-            "than a tuned optimum — precisely the overfitting the methodology warns "
-            "against. RRF has no alpha to overfit and is invariant to the two "
-            "retrievers' score scales, so it is the safer choice at identical measured "
-            "quality.\n\n"
+            "peak is more plausibly a coincidence of these particular 30 questions than "
+            "a tuned optimum. That is precisely the overfitting the methodology warns "
+            "against, and it is why **RRF remains the safer production choice** despite "
+            "losing here: it has no alpha to overfit and is invariant to score scale.\n\n"
             "For reference: alpha weights the dense side, `score = alpha * dense_norm + "
             "(1 - alpha) * sparse_norm`. Both distributions are min-max normalised first "
             "because BM25 scores are unbounded while cosine similarity is capped at 1; "

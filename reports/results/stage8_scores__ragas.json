@@ -1,0 +1,16 @@
+{
+  "qwen2.5:7b": {
+    "faithfulness": 0.898611111111111,
+    "answer_relevancy": 0.7403983418903609,
+    "context_precision": 0.7675925925288488,
+    "context_recall": 0.913888888888889,
+    "judge_model": "qwen2.5-7b-judge:latest"
+  },
+  "llama3.2:3b": {
+    "faithfulness": 0.7829365079365079,
+    "answer_relevancy": 0.6559681602741768,
+    "context_precision": 0.7675925925288488,
+    "context_recall": 0.913888888888889,
+    "judge_model": "qwen2.5-7b-judge:latest"
+  }
+}

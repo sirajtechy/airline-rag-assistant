@@ -187,11 +187,11 @@ gap to close. The measured winner is reported as measured, with the caveat attac
 |---|---|---|
 | Parsing | **PyMuPDF** | 100% gold-span recovery vs 96.7% for pypdf; 15× faster than pdfplumber |
 | Chunking | **recursive, 500 tokens, 50 overlap** | R@3 0.9000 — tied at the top; margin under one question |
-| Embeddings | **BAAI/bge-small-en-v1.5** | R@3 0.9000 vs 0.7667 MiniLM, at 1.8 ms/query |
+| Embeddings | **BAAI/bge-small-en-v1.5** | near-tie: R@3 0.9000 = MiniLM; wins MRR@10 0.8011 vs 0.7889 |
 | Vector store | **FAISS** | R@3 parity with Chroma; far faster index build at this size |
 | Retrieval mode | **Hybrid** | R@3 0.9000 vs 0.7667 dense / 0.8667 sparse; wins every route |
 | Fusion | **Weighted linear, α = 0.5** | R@3 0.9333 vs 0.9000 RRF — one question, caveat above |
-| Reranking | **None** | Cross-encoder *lowered* NDCG@3 and cost 120 ms |
+| Reranking | **None** | Cross-encoder *lowered* NDCG@3 0.8849 -> 0.8343 and cost 176 ms |
 | Routing | **Top-1 chunk** | 1.0000 on eval questions; beat both richer policies |
 | Generation | see Stage 8 | fixed retrieval, generator varied |
 
@@ -211,7 +211,11 @@ measured impact:
    test* and lifted sparse R@3 0.7667 → 0.8333.
 3. **Hybrid retrieval** — +0.1666 R@3 over dense, +0.0333 over sparse, and the only
    configuration that is strong on all three routes.
-4. **Embedding model** — bge-small over MiniLM was worth +0.1333 R@3 for 0.4 ms.
+4. **Embedding model** — now a *tie* on R@3 after the corpus was cleaned. An earlier
+   run of Stage 3 showed bge-small ahead of MiniLM by +0.1333 R@3, but that gap was
+   measured against the uncleaned corpus and evaporated once the boilerplate was
+   removed. A caution about ablation order: a stage measured against a defective
+   corpus can report a difference that does not survive fixing the defect.
 5. **Chunking, fusion method, vector store** — differences at or inside the noise
    floor of a 30-question set.
 6. **Reranking** — actively harmful.

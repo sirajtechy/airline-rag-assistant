@@ -1,0 +1,2355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Delta Air Lines Customer Support Assistant — Evaluation-Driven RAG</title>
+<style>
+/* ============================================================
+   Delta Air Lines RAG Capstone — Group 7
+   Single self-contained document. No external dependencies.
+   ============================================================ */
+
+:root{
+  --navy:#003268;
+  --navy-2:#00224a;
+  --red:#c8102e;
+  --bg:#f6f8fb;
+  --ink:#0d1b2a;
+  --muted:#4a5a6e;
+  --line:#d5dde8;
+  --card:#ffffff;
+  --win-bg:#e9f6ed;
+  --win-line:#2e7d4f;
+  --neg-bg:#fdeceb;
+  --neg-line:#c8102e;
+  --warn-bg:#fdf4e3;
+  --warn-line:#b4791a;
+  --tie-bg:#eef3fa;
+  --sidebar:280px;
+}
+
+*{box-sizing:border-box;}
+
+html{scroll-behavior:smooth;scroll-padding-top:24px;}
+
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--ink);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  font-size:17px;
+  line-height:1.62;
+  -webkit-font-smoothing:antialiased;
+}
+
+/* ---------- Layout ---------- */
+.shell{display:block;}
+
+nav.sidebar{
+  position:fixed;
+  top:0;left:0;bottom:0;
+  width:var(--sidebar);
+  background:var(--navy);
+  color:#e8eef6;
+  overflow-y:auto;
+  padding:26px 0 40px;
+  z-index:50;
+  border-right:4px solid var(--red);
+}
+nav.sidebar .brand{
+  padding:0 22px 18px;
+  border-bottom:1px solid rgba(255,255,255,.16);
+  margin-bottom:14px;
+}
+nav.sidebar .brand .mark{
+  display:inline-block;
+  font-size:11px;
+  letter-spacing:.18em;
+  text-transform:uppercase;
+  color:#ffd7dd;
+  font-weight:700;
+  margin-bottom:6px;
+}
+nav.sidebar .brand .name{
+  font-size:16px;
+  font-weight:700;
+  line-height:1.35;
+  color:#fff;
+}
+nav.sidebar .brand .sub{
+  font-size:12.5px;
+  color:#a9bcd4;
+  margin-top:5px;
+}
+nav.sidebar ol{
+  list-style:none;
+  margin:0;padding:0;
+  counter-reset:navsec;
+}
+nav.sidebar a{
+  display:block;
+  padding:8px 22px 8px 20px;
+  color:#c7d6e8;
+  text-decoration:none;
+  font-size:14.5px;
+  line-height:1.35;
+  border-left:4px solid transparent;
+  transition:background .12s,color .12s,border-color .12s;
+}
+nav.sidebar a:hover{background:rgba(255,255,255,.07);color:#fff;}
+nav.sidebar a.active{
+  background:rgba(255,255,255,.11);
+  color:#fff;
+  border-left-color:var(--red);
+  font-weight:600;
+}
+nav.sidebar a.sub-link{
+  padding-left:38px;
+  font-size:13.5px;
+  color:#9fb3ca;
+}
+nav.sidebar .navgroup{
+  padding:14px 22px 5px;
+  font-size:10.5px;
+  letter-spacing:.16em;
+  text-transform:uppercase;
+  color:#7f97b3;
+  font-weight:700;
+}
+
+main{
+  margin-left:var(--sidebar);
+  padding:0 46px 120px;
+  max-width:1180px;
+}
+
+/* ---------- Hero ---------- */
+header.hero{
+  background:linear-gradient(160deg,var(--navy) 0%,var(--navy-2) 100%);
+  color:#fff;
+  margin:0 -46px 44px;
+  padding:64px 46px 52px;
+  border-bottom:6px solid var(--red);
+}
+header.hero .kicker{
+  font-size:12px;
+  letter-spacing:.22em;
+  text-transform:uppercase;
+  color:#ff9fae;
+  font-weight:700;
+  margin-bottom:16px;
+}
+header.hero h1{
+  font-size:44px;
+  line-height:1.15;
+  margin:0 0 14px;
+  font-weight:700;
+  letter-spacing:-.015em;
+  max-width:20ch;
+}
+header.hero .subtitle{
+  font-size:20px;
+  color:#bed0e6;
+  margin:0 0 8px;
+  font-weight:400;
+}
+header.hero .meta{
+  font-size:15px;
+  color:#8fa9c8;
+  margin-top:18px;
+  padding-top:18px;
+  border-top:1px solid rgba(255,255,255,.18);
+  max-width:80ch;
+}
+
+.metric-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(168px,1fr));
+  gap:14px;
+  margin-top:34px;
+}
+.metric{
+  background:rgba(255,255,255,.09);
+  border:1px solid rgba(255,255,255,.18);
+  border-top:3px solid var(--red);
+  border-radius:4px;
+  padding:16px 16px 14px;
+}
+.metric .val{
+  font-size:31px;
+  font-weight:700;
+  line-height:1.1;
+  font-variant-numeric:tabular-nums;
+  letter-spacing:-.02em;
+}
+.metric .lbl{
+  font-size:11.5px;
+  letter-spacing:.13em;
+  text-transform:uppercase;
+  color:#a8c0dc;
+  margin-top:7px;
+  font-weight:600;
+}
+
+/* ---------- Sections ---------- */
+section{
+  margin:0 0 66px;
+  scroll-margin-top:20px;
+}
+section > h2{
+  font-size:31px;
+  line-height:1.22;
+  margin:0 0 6px;
+  color:var(--navy);
+  font-weight:700;
+  letter-spacing:-.01em;
+  padding-bottom:10px;
+  border-bottom:3px solid var(--navy);
+}
+section > .sec-num{
+  display:block;
+  font-size:12px;
+  letter-spacing:.2em;
+  text-transform:uppercase;
+  color:var(--red);
+  font-weight:700;
+  margin-bottom:8px;
+}
+h3{
+  font-size:23px;
+  margin:38px 0 10px;
+  color:var(--navy);
+  font-weight:700;
+  line-height:1.3;
+}
+h4{
+  font-size:18.5px;
+  margin:26px 0 8px;
+  color:var(--ink);
+  font-weight:700;
+}
+h5{
+  font-size:12px;
+  letter-spacing:.15em;
+  text-transform:uppercase;
+  color:var(--red);
+  font-weight:700;
+  margin:22px 0 6px;
+}
+p{margin:0 0 15px;max-width:88ch;}
+ul,ol{max-width:88ch;padding-left:24px;margin:0 0 16px;}
+li{margin-bottom:8px;}
+strong{font-weight:700;color:var(--navy-2);}
+code{
+  font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+  font-size:.88em;
+  background:#e7edf6;
+  border:1px solid #d3ddea;
+  border-radius:3px;
+  padding:1px 5px;
+  color:#123;
+}
+.lead{font-size:19px;color:#2a3c52;max-width:82ch;}
+
+/* ---------- Tables ---------- */
+.table-wrap{
+  overflow-x:auto;
+  margin:18px 0 10px;
+  border:1px solid var(--line);
+  border-radius:5px;
+  background:var(--card);
+}
+table{
+  border-collapse:collapse;
+  width:100%;
+  font-size:15px;
+  font-variant-numeric:tabular-nums;
+}
+caption{
+  caption-side:top;
+  text-align:left;
+  font-size:13px;
+  font-weight:700;
+  letter-spacing:.09em;
+  text-transform:uppercase;
+  color:var(--navy);
+  padding:12px 14px 10px;
+  background:#eef3fa;
+  border-bottom:1px solid var(--line);
+}
+thead th{
+  background:var(--navy);
+  color:#fff;
+  text-align:left;
+  padding:11px 13px;
+  font-size:13.5px;
+  font-weight:600;
+  letter-spacing:.02em;
+  white-space:nowrap;
+  vertical-align:bottom;
+  border-right:1px solid rgba(255,255,255,.13);
+}
+thead th:last-child{border-right:none;}
+tbody td{
+  padding:10px 13px;
+  border-bottom:1px solid #e6ecf4;
+  border-right:1px solid #f0f4f9;
+  vertical-align:top;
+}
+tbody td:last-child{border-right:none;}
+tbody tr:last-child td{border-bottom:none;}
+tbody tr:nth-child(even){background:#fafcfe;}
+td.num,th.num{text-align:right;}
+tr.win td{background:var(--win-bg) !important;font-weight:700;color:#14432a;}
+tr.win td:first-child{box-shadow:inset 4px 0 0 var(--win-line);}
+tr.neg td{background:var(--neg-bg) !important;color:#6d1119;}
+tr.neg td:first-child{box-shadow:inset 4px 0 0 var(--neg-line);}
+tr.warn td{background:var(--warn-bg) !important;color:#5b3c07;}
+tr.warn td:first-child{box-shadow:inset 4px 0 0 var(--warn-line);}
+tr.tie td{background:var(--tie-bg) !important;}
+td.cell-neg{background:var(--neg-bg);color:#6d1119;font-weight:700;}
+td.cell-win{background:var(--win-bg);color:#14432a;font-weight:700;}
+.tablenote{
+  font-size:14px;
+  color:var(--muted);
+  margin:6px 0 0;
+  max-width:88ch;
+}
+.legend{
+  display:flex;flex-wrap:wrap;gap:16px;
+  font-size:13.5px;color:var(--muted);
+  margin:10px 0 0;
+}
+.legend span{display:inline-flex;align-items:center;gap:7px;}
+.swatch{width:15px;height:15px;border-radius:3px;border:1px solid var(--line);display:inline-block;}
+.sw-win{background:var(--win-bg);border-color:var(--win-line);}
+.sw-neg{background:var(--neg-bg);border-color:var(--neg-line);}
+.sw-tie{background:var(--tie-bg);}
+
+/* ---------- Callouts ---------- */
+.callout{
+  border-left:6px solid var(--navy);
+  background:#eef3fa;
+  padding:18px 22px 16px;
+  margin:24px 0;
+  border-radius:0 5px 5px 0;
+  max-width:92ch;
+}
+.callout .clabel{
+  display:block;
+  font-size:11.5px;
+  letter-spacing:.17em;
+  text-transform:uppercase;
+  font-weight:700;
+  color:var(--navy);
+  margin-bottom:8px;
+}
+.callout p:last-child{margin-bottom:0;}
+.callout.c-red{border-left-color:var(--red);background:#fdeceb;}
+.callout.c-red .clabel{color:var(--red);}
+.callout.c-green{border-left-color:var(--win-line);background:var(--win-bg);}
+.callout.c-green .clabel{color:#1d6340;}
+.callout.c-amber{border-left-color:var(--warn-line);background:var(--warn-bg);}
+.callout.c-amber .clabel{color:#8a5c0e;}
+
+/* ---------- Cards ---------- */
+.cards{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(360px,1fr));
+  gap:20px;
+  margin:22px 0;
+}
+.card{
+  background:var(--card);
+  border:1px solid var(--line);
+  border-top:4px solid var(--navy);
+  border-radius:5px;
+  padding:20px 22px 18px;
+}
+.card h4{margin:0 0 12px;font-size:19px;color:var(--navy);line-height:1.3;}
+.card .tag{
+  display:inline-block;
+  font-size:10.5px;
+  letter-spacing:.15em;
+  text-transform:uppercase;
+  font-weight:700;
+  color:#fff;
+  background:var(--red);
+  padding:3px 9px;
+  border-radius:3px;
+  margin-bottom:10px;
+}
+.pdf-row{margin:0 0 12px;}
+.pdf-row:last-child{margin-bottom:0;}
+.pdf-row .k{
+  display:block;
+  font-size:11px;
+  letter-spacing:.15em;
+  text-transform:uppercase;
+  font-weight:700;
+  color:var(--red);
+  margin-bottom:3px;
+}
+.pdf-row .v{display:block;font-size:15.5px;line-height:1.55;}
+
+/* ---------- Architecture diagram ---------- */
+.arch{
+  background:var(--card);
+  border:1px solid var(--line);
+  border-radius:6px;
+  padding:28px 24px;
+  margin:22px 0;
+  overflow-x:auto;
+}
+.flow{
+  display:flex;
+  flex-wrap:wrap;
+  align-items:stretch;
+  gap:0;
+}
+.node{
+  background:#eef3fa;
+  border:1.5px solid var(--navy);
+  border-radius:5px;
+  padding:11px 14px;
+  min-width:132px;
+  max-width:200px;
+  font-size:14px;
+  line-height:1.4;
+  color:var(--navy-2);
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+}
+.node b{display:block;font-size:14.5px;color:var(--navy);font-weight:700;}
+.node small{display:block;font-size:12.5px;color:var(--muted);margin-top:3px;line-height:1.35;}
+.node.accent{background:var(--navy);border-color:var(--navy);}
+.node.accent b{color:#fff;}
+.node.accent small{color:#b9cde5;}
+.node.guard{background:#fdeceb;border-color:var(--red);}
+.node.guard b{color:var(--red);}
+.node.out{background:var(--win-bg);border-color:var(--win-line);}
+.node.out b{color:#1d6340;}
+.arrow{
+  align-self:center;
+  flex:0 0 30px;
+  height:14px;
+  position:relative;
+}
+.arrow::before{
+  content:"";
+  position:absolute;
+  left:0;top:6px;
+  width:22px;height:2px;
+  background:var(--navy);
+}
+.arrow::after{
+  content:"";
+  position:absolute;
+  right:2px;top:1px;
+  width:0;height:0;
+  border-top:6px solid transparent;
+  border-bottom:6px solid transparent;
+  border-left:9px solid var(--navy);
+}
+.arrow.down{
+  flex:0 0 100%;
+  height:30px;
+  width:30px;
+  margin-left:60px;
+}
+.arrow.down::before{left:10px;top:0;width:2px;height:22px;}
+.arrow.down::after{
+  left:5px;top:20px;right:auto;
+  border-left:6px solid transparent;
+  border-right:6px solid transparent;
+  border-top:9px solid var(--navy);
+  border-bottom:none;
+}
+.arrow.red::before{background:var(--red);}
+.arrow.red::after{border-left-color:var(--red);}
+.arrow.red.down::after{border-top-color:var(--red);border-left-color:transparent;}
+.flow-row{
+  display:flex;
+  flex-wrap:nowrap;
+  align-items:stretch;
+  margin-bottom:26px;
+  min-width:max-content;
+}
+.flow-label{
+  font-size:11.5px;
+  letter-spacing:.16em;
+  text-transform:uppercase;
+  font-weight:700;
+  color:var(--muted);
+  margin:0 0 10px;
+}
+.guard-lane{
+  background:#fdeceb;
+  border:1.5px dashed var(--red);
+  border-radius:5px;
+  padding:16px 18px;
+  margin:0 0 26px;
+}
+.guard-lane .flow-label{color:var(--red);}
+
+/* ---------- Code blocks ---------- */
+pre{
+  background:var(--navy-2);
+  color:#dbe7f5;
+  padding:18px 20px;
+  border-radius:5px;
+  overflow-x:auto;
+  font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+  font-size:14px;
+  line-height:1.65;
+  margin:16px 0;
+  border-left:5px solid var(--red);
+  tab-size:2;
+}
+pre.tree{
+  background:#fff;
+  color:var(--ink);
+  border:1px solid var(--line);
+  border-left:5px solid var(--navy);
+  font-size:13.5px;
+  line-height:1.6;
+}
+pre .cm{color:#8ba7c7;}
+pre .pr{color:#ff9fae;}
+pre .tr-d{color:var(--navy);font-weight:700;}
+pre .tr-c{color:var(--muted);}
+
+/* ---------- Badges / misc ---------- */
+.badge{
+  display:inline-block;
+  font-size:10.5px;
+  letter-spacing:.13em;
+  text-transform:uppercase;
+  font-weight:700;
+  padding:3px 8px;
+  border-radius:3px;
+  vertical-align:middle;
+  white-space:nowrap;
+}
+.badge-pending{background:var(--warn-bg);color:#8a5c0e;border:1px solid var(--warn-line);}
+.badge-pass{background:var(--win-bg);color:#1d6340;border:1px solid var(--win-line);}
+.badge-fail{background:var(--neg-bg);color:var(--red);border:1px solid var(--red);}
+.badge-navy{background:#e0e9f5;color:var(--navy);border:1px solid #b7c9df;}
+.pending-cell{color:#8a5c0e;font-weight:700;}
+
+.quote{
+  border-left:4px solid var(--line);
+  padding:4px 0 4px 18px;
+  margin:16px 0;
+  color:#2a3c52;
+  font-style:italic;
+  max-width:84ch;
+}
+
+.kv{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(230px,1fr));
+  gap:14px;
+  margin:20px 0;
+}
+.kv .item{
+  background:var(--card);
+  border:1px solid var(--line);
+  border-left:4px solid var(--navy);
+  border-radius:4px;
+  padding:13px 15px;
+}
+.kv .item .k{
+  font-size:10.5px;letter-spacing:.15em;text-transform:uppercase;
+  color:var(--muted);font-weight:700;display:block;margin-bottom:4px;
+}
+.kv .item .v{font-size:16px;font-weight:600;color:var(--navy-2);}
+
+.stage-head{
+  display:flex;
+  align-items:baseline;
+  gap:14px;
+  flex-wrap:wrap;
+  margin:44px 0 4px;
+  padding-top:14px;
+  border-top:1px solid var(--line);
+}
+.stage-head .sid{
+  font-size:12px;letter-spacing:.16em;text-transform:uppercase;
+  font-weight:700;color:#fff;background:var(--navy);
+  padding:4px 10px;border-radius:3px;
+}
+.stage-head h3{margin:0;font-size:23px;}
+.question{
+  font-size:16.5px;
+  color:#2a3c52;
+  background:#eef3fa;
+  border-left:4px solid var(--navy);
+  padding:10px 16px;
+  margin:12px 0 4px;
+  max-width:92ch;
+}
+.question b{
+  font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--red);display:block;margin-bottom:2px;
+}
+.winner-line{
+  font-size:16px;
+  background:var(--win-bg);
+  border-left:4px solid var(--win-line);
+  padding:10px 16px;
+  margin:14px 0;
+  max-width:92ch;
+  color:#14432a;
+}
+.winner-line b{
+  font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;
+  color:#1d6340;display:block;margin-bottom:2px;
+}
+.winner-line.rejected{background:var(--neg-bg);border-left-color:var(--red);color:#6d1119;}
+.winner-line.rejected b{color:var(--red);}
+
+.ranked{counter-reset:rk;list-style:none;padding-left:0;max-width:92ch;}
+.ranked > li{
+  counter-increment:rk;
+  position:relative;
+  padding:14px 18px 12px 62px;
+  background:var(--card);
+  border:1px solid var(--line);
+  border-radius:4px;
+  margin-bottom:12px;
+}
+.ranked > li::before{
+  content:counter(rk);
+  position:absolute;left:16px;top:12px;
+  width:32px;height:32px;
+  background:var(--navy);color:#fff;
+  border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-weight:700;font-size:15px;
+}
+.ranked > li.rk-neg{border-left:4px solid var(--red);}
+.ranked > li.rk-neg::before{background:var(--red);}
+
+#toTop{
+  position:fixed;
+  right:26px;bottom:26px;
+  background:var(--navy);
+  color:#fff;
+  border:2px solid #fff;
+  border-radius:4px;
+  padding:11px 16px;
+  font-size:13px;
+  font-weight:700;
+  letter-spacing:.09em;
+  text-transform:uppercase;
+  cursor:pointer;
+  box-shadow:0 3px 14px rgba(0,34,74,.34);
+  opacity:0;
+  pointer-events:none;
+  transition:opacity .2s;
+  z-index:60;
+  font-family:inherit;
+}
+#toTop.show{opacity:1;pointer-events:auto;}
+#toTop:hover{background:var(--red);}
+
+footer.docfoot{
+  margin-left:0;
+  border-top:3px solid var(--navy);
+  padding-top:22px;
+  color:var(--muted);
+  font-size:14.5px;
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width:1080px){
+  nav.sidebar{
+    position:static;width:auto;height:auto;bottom:auto;
+    border-right:none;border-bottom:4px solid var(--red);
+  }
+  nav.sidebar ol{display:flex;flex-wrap:wrap;gap:2px;padding:0 14px;}
+  nav.sidebar a{border-left:none;border-bottom:3px solid transparent;padding:7px 12px;}
+  nav.sidebar a.active{border-left:none;border-bottom-color:var(--red);}
+  nav.sidebar a.sub-link{display:none;}
+  nav.sidebar .navgroup{display:none;}
+  main{margin-left:0;padding:0 22px 90px;}
+  header.hero{margin:0 -22px 36px;padding:44px 22px 40px;}
+  header.hero h1{font-size:32px;}
+}
+
+/* ---------- Print ---------- */
+@media print{
+  :root{--sidebar:0px;}
+  html{scroll-behavior:auto;}
+  body{
+    background:#fff;
+    color:#000;
+    font-size:10.5pt;
+    line-height:1.45;
+  }
+  nav.sidebar{display:none !important;}
+  #toTop{display:none !important;}
+  main{margin-left:0;max-width:100%;padding:0;}
+  header.hero{
+    background:#fff !important;
+    color:#000 !important;
+    margin:0 0 18pt;
+    padding:0 0 12pt;
+    border-bottom:2pt solid #003268;
+    -webkit-print-color-adjust:exact;print-color-adjust:exact;
+  }
+  header.hero h1{font-size:24pt;color:#003268;}
+  header.hero .kicker{color:#c8102e;}
+  header.hero .subtitle{color:#333;}
+  header.hero .meta{color:#444;border-top-color:#bbb;}
+  .metric{background:#f2f5fa !important;border:1pt solid #999;color:#000;}
+  .metric .val{color:#003268;font-size:17pt;}
+  .metric .lbl{color:#444;}
+  .metric-grid{grid-template-columns:repeat(3,1fr);}
+  section{margin-bottom:20pt;page-break-inside:auto;}
+  section > h2{
+    font-size:16pt;page-break-after:avoid;
+    border-bottom:1.5pt solid #003268;
+  }
+  h3,h4,h5{page-break-after:avoid;}
+  .stage-head{page-break-after:avoid;page-break-inside:avoid;}
+  table{font-size:8.5pt;page-break-inside:auto;}
+  thead{display:table-header-group;}
+  tr{page-break-inside:avoid;}
+  thead th{background:#003268 !important;color:#fff !important;}
+  caption{background:#e9eef6 !important;}
+  tr.win td{background:#e2f2e8 !important;}
+  tr.neg td{background:#fbe6e5 !important;}
+  tr.warn td{background:#fbf1de !important;}
+  tr.tie td{background:#eef2f8 !important;}
+  .table-wrap{overflow:visible;border:1pt solid #999;}
+  .callout,.card,.arch,.guard-lane,.kv .item,.ranked > li,.winner-line,.question{
+    page-break-inside:avoid;
+  }
+  pre{
+    background:#f4f6fa !important;
+    color:#111 !important;
+    border:1pt solid #999;
+    border-left:3pt solid #c8102e;
+    font-size:8.5pt;
+    white-space:pre-wrap;
+    page-break-inside:avoid;
+  }
+  pre .cm{color:#556;}
+  pre .pr{color:#8a2030;}
+  .cards{grid-template-columns:1fr 1fr;gap:10pt;}
+  .flow-row{flex-wrap:wrap;min-width:0;}
+  .arch{overflow:visible;}
+  a{color:#000;text-decoration:none;}
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  @page{margin:14mm 12mm;}
+}
+</style>
+</head>
+<body>
+
+<nav class="sidebar" aria-label="Document sections">
+  <div class="brand">
+    <span class="mark">Group 7 &middot; M10 Capstone</span>
+    <span class="name">Delta Air Lines Support Assistant</span>
+    <span class="sub">Evaluation-Driven RAG</span>
+  </div>
+  <ol>
+    <li><a href="#top">Title and headline metrics</a></li>
+    <li><a href="#assignment">1. The assignment</a></li>
+    <li><a href="#architecture">2. Architecture</a></li>
+    <li><a href="#groundtruth">3. Ground truth first</a></li>
+    <li><a href="#stages">4. Stages 0&ndash;8 ablations</a></li>
+    <li><a href="#stage0" class="sub-link">Stage 0 &mdash; XBRL</a></li>
+    <li><a href="#stage0b" class="sub-link">Stage 0b &mdash; Front matter</a></li>
+    <li><a href="#stage0c" class="sub-link">Stage 0c &mdash; Routing</a></li>
+    <li><a href="#stage1" class="sub-link">Stage 1 &mdash; Parsing</a></li>
+    <li><a href="#stage2" class="sub-link">Stage 2 &mdash; Chunking</a></li>
+    <li><a href="#stage3" class="sub-link">Stage 3 &mdash; Embeddings</a></li>
+    <li><a href="#stage4" class="sub-link">Stage 4 &mdash; Vector DB</a></li>
+    <li><a href="#stage5" class="sub-link">Stage 5 &mdash; Dense/sparse/hybrid</a></li>
+    <li><a href="#stage6" class="sub-link">Stage 6 &mdash; Fusion</a></li>
+    <li><a href="#stage7" class="sub-link">Stage 7 &mdash; Reranking</a></li>
+    <li><a href="#stage8" class="sub-link">Stage 8 &mdash; Generation LLM</a></li>
+    <li><a href="#routing">5. Routing and guardrails</a></li>
+    <li><a href="#application">6. The application</a></li>
+    <li><a href="#warstories">7. Engineering war stories</a></li>
+    <li><a href="#results">8. Results and limitations</a></li>
+    <li><a href="#repro">9. Reproducibility</a></li>
+  </ol>
+</nav>
+
+<main>
+
+<!-- ============================= HERO ============================= -->
+<header class="hero" id="top">
+  <div class="kicker">Generative AI Course &middot; M10 RAG Capstone</div>
+  <h1>Delta Air Lines Customer Support Assistant &mdash; Evaluation-Driven RAG</h1>
+  <p class="subtitle">Group 7, M10 RAG Capstone</p>
+  <div class="metric-grid">
+    <div class="metric"><div class="val">0.9333</div><div class="lbl">Recall @ 3</div></div>
+    <div class="metric"><div class="val">0.7333</div><div class="lbl">Recall @ 1</div></div>
+    <div class="metric"><div class="val">0.8319</div><div class="lbl">MRR @ 10</div></div>
+    <div class="metric"><div class="val">0.8849</div><div class="lbl">NDCG @ 3</div></div>
+    <div class="metric"><div class="val">1.000</div><div class="lbl">Routing accuracy</div></div>
+    <div class="metric"><div class="val">5 / 5</div><div class="lbl">Required acceptance tests</div></div>
+  </div>
+  <p class="meta">
+    Measured on a 30-question labelled evaluation set built before any pipeline decision was made.
+    Final configuration: PyMuPDF parsing, recursive 500/50 chunking, BAAI/bge-small-en-v1.5 embeddings,
+    FAISS flat inner-product index, hybrid dense + BM25 retrieval, weighted linear fusion at
+    alpha = 0.5, no reranker, top-1-chunk routing.
+  </p>
+</header>
+
+<!-- ============================= 1. ASSIGNMENT ============================= -->
+<section id="assignment">
+  <span class="sec-num">Section 1</span>
+  <h2>The assignment, and what it actually rewards</h2>
+
+  <p class="lead">
+    The grading weights in <code>data/raw/EVALUATION_METHODOLOGY.md</code> put the majority of the
+    marks on measured evidence rather than on a working chat interface. The study is the deliverable.
+  </p>
+
+  <div class="table-wrap">
+    <table>
+      <caption>Grading weights (REQUIREMENT.md section 9)</caption>
+      <thead>
+        <tr><th class="num">Weight</th><th>Component</th><th>What is required</th></tr>
+      </thead>
+      <tbody>
+        <tr class="win">
+          <td class="num">40%</td>
+          <td>Evaluation rigour</td>
+          <td>8 ablation tables, real measured numbers, written winner justification per stage</td>
+        </tr>
+        <tr>
+          <td class="num">30%</td>
+          <td>Routing</td>
+          <td>Correct passenger-vs-cargo routing on the 5 acceptance tests</td>
+        </tr>
+        <tr>
+          <td class="num">20%</td>
+          <td>End-to-end judged quality</td>
+          <td>RAGAS + DeepEval scores on the final pipeline</td>
+        </tr>
+        <tr>
+          <td class="num">10%</td>
+          <td>Code quality / app</td>
+          <td>Working chatbot, usable interface, maintainable code</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="callout">
+    <span class="clabel">Key framing</span>
+    <p>
+      This is not &ldquo;build a chatbot&rdquo;. It is &ldquo;run a rigorous 8-stage ablation study and
+      ship the winning config&rdquo;. The methodology states plainly that a chatbot which just works,
+      with no evaluation evidence behind it, caps at the 30% line and cannot pass on functionality
+      alone. Every configuration choice in this project therefore has a table behind it, including the
+      choices that were rejected.
+    </p>
+  </div>
+
+  <h3>The corpus</h3>
+  <p>
+    One airline, three real business lines &mdash; 45 PDF pages and 2 XML files. The three-way split is
+    what makes the routing requirement non-trivial: the vocabulary overlaps heavily across documents
+    while the correct answers do not.
+  </p>
+
+  <div class="table-wrap">
+    <table>
+      <caption>Source documents</caption>
+      <thead>
+        <tr><th>Document</th><th>Business line</th><th>Format</th><th class="num">Extent</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Delta Domestic General Rules Tariff (Contract of Carriage)</td>
+          <td>Passenger</td><td>PDF</td><td class="num">23 pages</td>
+        </tr>
+        <tr>
+          <td>Delta Cargo U.S. Domestic Shipping Rules Tariff</td>
+          <td>Cargo</td><td>PDF</td><td class="num">22 pages</td>
+        </tr>
+        <tr>
+          <td>Delta FY2025 10-K XBRL data + label linkbase</td>
+          <td>Financial</td><td>2 &times; XML</td><td class="num">420 concept records / 1,394 facts</td>
+        </tr>
+      </tbody>
+    </table>
+    </div>
+  <p class="tablenote">
+    XBRL concept records average 534 characters &mdash; already chunk-sized, so the financial route is
+    not further split.
+  </p>
+</section>
+
+<!-- ============================= 2. ARCHITECTURE ============================= -->
+<section id="architecture">
+  <span class="sec-num">Section 2</span>
+  <h2>Architecture</h2>
+
+  <p>
+    All retrieval, routing, guardrail and generation logic lives in the transport-agnostic
+    <code>delta_rag</code> package. The FastAPI backend and the four notebooks both call the same code,
+    so the application and the evaluation cannot drift apart.
+  </p>
+
+  <div class="arch">
+    <div class="guard-lane">
+      <p class="flow-label">Guardrail short-circuit &mdash; runs before retrieval</p>
+      <div class="flow-row">
+        <div class="node guard"><b>Question</b><small>user input</small></div>
+        <div class="arrow red"></div>
+        <div class="node guard"><b>Carrier check</b><small>out-of-scope airline named</small></div>
+        <div class="arrow red"></div>
+        <div class="node guard"><b>Live-data check</b><small>booking / flight status intent</small></div>
+        <div class="arrow red"></div>
+        <div class="node guard"><b>Refuse or deflect</b><small>deterministic canned response, no LLM call</small></div>
+      </div>
+      <p class="tablenote" style="margin-top:4px;">
+        Both checks are deterministic and cheap, and must not depend on a model choosing to behave.
+        Carrier scope is tested first so &ldquo;what is the status of my JetBlue flight&rdquo; is refused
+        as out of scope rather than merely deflected.
+      </p>
+    </div>
+
+    <p class="flow-label">Main pipeline</p>
+    <div class="flow-row">
+      <div class="node"><b>Raw documents</b><small>2 PDFs + 2 XBRL XML</small></div>
+      <div class="arrow"></div>
+      <div class="node"><b>Parsing</b><small>PyMuPDF</small></div>
+      <div class="arrow"></div>
+      <div class="node"><b>Cleaning</b><small>front matter dropped, running headers stripped</small></div>
+      <div class="arrow"></div>
+      <div class="node"><b>Chunking</b><small>recursive 500 / 50 + XBRL concept records</small></div>
+    </div>
+    <div class="flow-row">
+      <div class="node"><b>Embeddings</b><small>BAAI/bge-small-en-v1.5, 384-dim</small></div>
+      <div class="arrow"></div>
+      <div class="node"><b>FAISS index</b><small>flat inner product</small></div>
+      <div class="arrow"></div>
+      <div class="node"><b>BM25 index</b><small>sparse lexical</small></div>
+      <div class="arrow"></div>
+      <div class="node accent"><b>Hybrid retrieval</b><small>weighted linear fusion, alpha = 0.5</small></div>
+    </div>
+    <div class="flow-row">
+      <div class="node accent"><b>Top-1 routing</b><small>business line from the best-ranked chunk</small></div>
+      <div class="arrow"></div>
+      <div class="node"><b>Context scoping</b><small>restrict to the routed business line</small></div>
+      <div class="arrow"></div>
+      <div class="node guard"><b>Abstain gate</b><small>dense cosine floor 0.67</small></div>
+      <div class="arrow"></div>
+      <div class="node"><b>Grounded generation</b><small>enforced [n] citations</small></div>
+      <div class="arrow"></div>
+      <div class="node out"><b>Answer</b><small>+ verified citation list</small></div>
+    </div>
+  </div>
+
+  <h3>Repository layout</h3>
+<pre class="tree"><span class="tr-d">Gen-AI-RAG-Project/</span>
+├── <span class="tr-d">src/delta_rag/</span>          <span class="tr-c">17 modules — all pipeline logic, transport-agnostic</span>
+│   ├── parsing.py           <span class="tr-c">pypdf / pdfplumber / pymupdf + boilerplate cleaning</span>
+│   ├── chunking.py          <span class="tr-c">fixed, fixed_ov, recursive, rule_aware</span>
+│   ├── xbrl.py              <span class="tr-c">concept records, label linkbase, statement aliases</span>
+│   ├── embeddings.py        <span class="tr-c">minilm / bge-small / nomic, with instruction prefixes</span>
+│   ├── stores.py            <span class="tr-c">FAISS + ChromaDB behind one interface</span>
+│   ├── retrieval.py         <span class="tr-c">dense, BM25, RRF and weighted-linear fusion</span>
+│   ├── rerank.py            <span class="tr-c">cross-encoder shortlist reranker (measured, rejected)</span>
+│   ├── routing.py           <span class="tr-c">business-line routing + carrier / live-data detection</span>
+│   ├── guardrails.py        <span class="tr-c">pre-retrieval refusals + abstain threshold</span>
+│   ├── generate.py          <span class="tr-c">grounded prompt, citation enforcement + verification</span>
+│   ├── metrics.py           <span class="tr-c">R@k, MRR@10, DCG@3, NDCG@3 from spec definitions</span>
+│   ├── evalset.py           <span class="tr-c">label loading + machine verification of gold spans</span>
+│   ├── evaluation.py        <span class="tr-c">scoring harness, per-route / per-query-type splits</span>
+│   ├── ablation.py          <span class="tr-c">config sweep driver</span>
+│   ├── pipeline.py          <span class="tr-c">DeltaSupportBot — the shipped end-to-end object</span>
+│   ├── corpus.py            <span class="tr-c">document registry and chunk assembly</span>
+│   └── config.py            <span class="tr-c">SOURCE_DOCS, business lines, model specs, paths</span>
+├── <span class="tr-d">backend/</span>                 <span class="tr-c">FastAPI — /health, /config, /examples, /ask</span>
+├── <span class="tr-d">frontend/src/</span>            <span class="tr-c">React 18 + TypeScript + Vite chat UI</span>
+├── <span class="tr-d">scripts/</span>                 <span class="tr-c">10 ablation / evaluation / report scripts</span>
+├── <span class="tr-d">notebooks/</span>               <span class="tr-c">4 notebooks — evalset, ablations, judges, final pipeline</span>
+├── <span class="tr-d">eval/</span>                    <span class="tr-c">eval_set.yaml (30 labelled) + acceptance_tests.yaml (11)</span>
+├── <span class="tr-d">tests/</span>                   <span class="tr-c">30 unit tests pinning the metric implementations</span>
+├── <span class="tr-d">data/raw/</span>                <span class="tr-c">2 PDFs, 2 XBRL XML, REQUIREMENT + methodology specs</span>
+└── <span class="tr-d">reports/results/</span>         <span class="tr-c">measured artefacts — one .json + one .md per stage</span>
+</pre>
+  <p class="tablenote">Approximately 5,000 lines of Python and TypeScript across <code>src</code>, <code>backend</code>, <code>frontend/src</code>, <code>scripts</code> and <code>tests</code>.</p>
+</section>
+
+<!-- ============================= 3. GROUND TRUTH ============================= -->
+<section id="groundtruth">
+  <span class="sec-num">Section 3</span>
+  <h2>The foundation: ground truth before design decisions</h2>
+
+  <h3>The chunk-ID trap</h3>
+  <p>
+    Stage 1 varies the PDF parser. Stage 2 varies the chunking strategy. Both change chunk boundaries
+    and therefore chunk IDs. Ground truth recorded as &ldquo;chunk #47 is correct&rdquo; is destroyed by
+    the first two experiments &mdash; and every table after them would be measuring noise while still
+    looking authoritative. The labelling scheme has to be invariant to both.
+  </p>
+
+  <div class="table-wrap">
+    <table>
+      <caption>Label schema &mdash; parser- and chunker-invariant</caption>
+      <thead><tr><th>Field</th><th>Meaning</th><th>Example</th></tr></thead>
+      <tbody>
+        <tr><td><code>gold_doc</code></td><td>Stable document identifier</td><td><code>contract_of_carriage</code></td></tr>
+        <tr><td><code>gold_locators</code></td><td>PDF page or XBRL concept</td><td><code>p17</code> &nbsp;/&nbsp; <code>us-gaap:NetIncomeLoss</code></td></tr>
+        <tr><td><code>gold_span</code></td><td>Verbatim answer-bearing text, whitespace-normalised</td><td>&ldquo;Delta reserves the right to sell more tickets&hellip;&rdquo;</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <caption>Graded relevance, derived mechanically at scoring time</caption>
+      <thead><tr><th class="num">Grade</th><th>Condition</th><th>Interpretation</th></tr></thead>
+      <tbody>
+        <tr><td class="num">3</td><td>Chunk contains the verbatim gold span</td><td>Answer-bearing</td></tr>
+        <tr><td class="num">2</td><td>Right document, at a gold locator, span not intact</td><td>Right page, mangled text</td></tr>
+        <tr><td class="num">1</td><td>Right document, elsewhere</td><td>Right document, wrong place</td></tr>
+        <tr><td class="num">0</td><td>Different document</td><td>Wrong document</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="callout">
+    <span class="clabel">Design decision</span>
+    <p>
+      <strong>The binary relevance threshold is grade &ge; 2, not 3.</strong> pypdf extracts
+      &ldquo;those&rdquo; as &ldquo;t hose&rdquo; on contract page 4, so one gold span is unrecoverable
+      from its output. Requiring grade 3 would score that mangled-but-correct page as a total retrieval
+      miss &mdash; overstating the damage and double-counting a parser that is already penalised in the
+      Stage 1 gold-span-recoverability column. At grade &ge; 2 the defect costs NDCG@3 (graded) and
+      leaves R@3 (binary) intact: counted once, in one place. A unit test
+      (<code>test_relevance_threshold_is_grade_two</code>) pins the threshold so it cannot drift.
+    </p>
+  </div>
+
+  <h3>The evaluation set</h3>
+  <div class="kv">
+    <div class="item"><span class="k">Questions</span><span class="v">30</span></div>
+    <div class="item"><span class="k">By route</span><span class="v">12 passenger / 11 cargo / 7 financial</span></div>
+    <div class="item"><span class="k">By query type</span><span class="v">14 keyword / 16 semantic</span></div>
+    <div class="item"><span class="k">Gold spans verified</span><span class="v">30 / 30 machine-checked</span></div>
+  </div>
+  <p>
+    Built before any pipeline decision. The keyword/semantic split exists because Stage 5 requires it,
+    so it had to be authored up front rather than reconstructed afterwards. Labels are gated against one
+    reference parser (<code>pymupdf</code>) so ground truth stays fixed while Stage 1 varies the parser
+    under test; per-parser span recoverability is then reported as Stage 1 <em>evidence</em> rather than
+    treated as a label failure.
+  </p>
+  <p>
+    The validator caught two real problems rather than merely passing:
+  </p>
+  <ul>
+    <li><strong>A labelling error of my own.</strong> Diluted EPS renders as &ldquo;USD 7.66&rdquo;
+      because the XBRL unit is <code>usdPerShare</code>, not the dollar-formatted string I had written.</li>
+    <li><strong>A genuine pypdf extraction defect</strong> &mdash; the &ldquo;t hose&rdquo; split on
+      contract page 4, which then became the evidence behind the grade-&ge;-2 decision above.</li>
+  </ul>
+
+  <h3>Metrics</h3>
+  <p>
+    R@1, R@3, MRR@10, DCG@3 and NDCG@3 are implemented directly from the specification definitions
+    rather than pulled from a library, and pinned by 30 unit tests against hand-worked values. For
+    example, DCG@3 over grades <code>[3, 2, 1]</code> is
+    3/log&#8322;(2) + 2/log&#8322;(3) + 1/log&#8322;(4) = <strong>4.76186</strong>.
+    A library disagreeing with that number would be a library using a different DCG convention,
+    which is precisely the kind of silent drift the tests exist to catch.
+  </p>
+</section>
+
+<!-- ============================= 4. STAGES ============================= -->
+<section id="stages">
+  <span class="sec-num">Section 4</span>
+  <h2>Stages 0&ndash;8: the ablation study</h2>
+
+  <p class="lead">
+    Every table below is copied from the measured artefacts in <code>reports/results/</code>, written by
+    the ablation scripts. Nothing is retyped by hand into the narrative.
+  </p>
+  <div class="legend">
+    <span><i class="swatch sw-win"></i> selected winner</span>
+    <span><i class="swatch sw-neg"></i> rejected / regression</span>
+    <span><i class="swatch sw-tie"></i> statistical tie with the winner</span>
+  </div>
+
+  <!-- ---------- STAGE 0 ---------- -->
+  <div class="stage-head" id="stage0">
+    <span class="sid">Stage 0</span>
+    <h3>XBRL representation (financial route)</h3>
+  </div>
+  <p class="question">
+    <b>Question</b>
+    How should 420 XBRL concept records be rendered as retrievable text so that a human-phrased
+    financial question finds the right fact?
+  </p>
+
+  <div class="table-wrap">
+    <table>
+      <caption>Stage 0 &mdash; XBRL financial-route representation</caption>
+      <thead>
+        <tr>
+          <th>XBRL representation</th><th>Mode</th>
+          <th class="num">Records</th><th class="num">Avg chars</th>
+          <th class="num">Financial R@3</th><th class="num">Financial MRR@10</th><th class="num">Overall R@3</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>A. Original verbose rendering</td><td>dense</td><td class="num">420</td><td class="num">534</td><td class="num">0.5714</td><td class="num">0.5083</td><td class="num">0.6333</td></tr>
+        <tr class="neg"><td>A. Original verbose rendering</td><td>sparse</td><td class="num">420</td><td class="num">534</td><td class="num">0.1429</td><td class="num">0.1587</td><td class="num">0.7333</td></tr>
+        <tr class="warn"><td>B. + label-first, compact periods, prose dropped</td><td>dense</td><td class="num">413</td><td class="num">389</td><td class="num">0.5714</td><td class="num">0.6071</td><td class="num">0.6333</td></tr>
+        <tr class="warn"><td>B. + label-first, compact periods, prose dropped</td><td>sparse</td><td class="num">413</td><td class="num">389</td><td class="num">0.1429</td><td class="num">0.1633</td><td class="num">0.7333</td></tr>
+        <tr class="win"><td>C. + statement-label aliases (final)</td><td>dense</td><td class="num">413</td><td class="num">391</td><td class="num">0.8571</td><td class="num">0.8571</td><td class="num">0.7000</td></tr>
+        <tr class="win"><td>C. + statement-label aliases (final)</td><td>sparse</td><td class="num">413</td><td class="num">391</td><td class="num">0.7143</td><td class="num">0.6476</td><td class="num">0.8667</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="tablenote">Amber rows are the refuted hypothesis: variant B is the boilerplate fix, and it moved nothing on R@3.</p>
+
+  <div class="winner-line">
+    <b>Winner</b>
+    Variant C &mdash; label-first records with statement-label aliases. Financial R@3 0.8571 dense /
+    0.7143 sparse; overall R@3 0.8667 sparse.
+  </div>
+
+  <div class="callout c-red">
+    <span class="clabel">Hypothesis refuted</span>
+    <p>
+      The financial route scored R@3 = <strong>0.1429</strong> on sparse retrieval. Dense and sparse
+      retrieval fail in different ways, so their failing <em>identically</em> pointed at the corpus, not
+      the config. The obvious culprit was boilerplate: 420 records sharing an entity/filing header and
+      repeating <em>&ldquo;for the period 2025-01-01 to 2025-12-31&rdquo;</em> on nearly every line,
+      leaving roughly 80% shared vocabulary. Variant B removes exactly that.
+    </p>
+    <p>
+      <strong>Removing all of it changed nothing.</strong> Sparse financial R@3 stayed at 0.1429 and
+      dense stayed at 0.5714. Only dense MRR@10 moved (0.5083 &rarr; 0.6071), i.e. slightly better
+      ordering of results that were already being found. The hypothesis was wrong, and the table records
+      it as wrong.
+    </p>
+    <p>
+      The real defect was a <strong>vocabulary gap</strong>. US-GAAP names the element
+      &ldquo;Revenue from Contract with Customer, Excluding Assessed Tax&rdquo;; a human asks for
+      &ldquo;total operating revenue&rdquo;. Those strings share almost no terms &mdash; fatal for BM25,
+      merely bad for embeddings. Bridging it took sparse from 0.1429 to <strong>0.7143</strong>
+      (5&times;) and dense from 0.5714 to <strong>0.8571</strong>.
+    </p>
+  </div>
+
+  <p class="tablenote">
+    Caveat stated plainly: the alias map is the single largest lever on this route and synonym injection
+    is inherently at risk of being fitted to the evaluation questions. The aliases were authored from
+    standard 10-K statement line-item conventions rather than from the eval set, and are reported here in
+    isolation (variant B vs C) precisely so a sceptical reader can discount them.
+  </p>
+
+  <!-- ---------- STAGE 0b ---------- -->
+  <div class="stage-head" id="stage0b">
+    <span class="sid">Stage 0b</span>
+    <h3>Front matter and running headers</h3>
+  </div>
+  <p class="question">
+    <b>Question</b>
+    Do the contents page and the repeated page header help or hurt retrieval?
+  </p>
+
+  <div class="table-wrap">
+    <table>
+      <caption>Stage 0b &mdash; front matter and running-header removal</caption>
+      <thead>
+        <tr>
+          <th>Preprocessing</th><th>Mode</th><th class="num">PDF pages</th>
+          <th class="num">R@1</th><th class="num">R@3</th><th class="num">MRR@10</th><th class="num">NDCG@3</th>
+          <th class="num">R@3 (cargo)</th><th class="num">R@3 (passenger)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>A. Raw pages (front matter + headers kept)</td><td>sparse</td><td class="num">45</td><td class="num">0.6667</td><td class="num">0.7667</td><td class="num">0.7473</td><td class="num">0.7943</td><td class="num">0.6364</td><td class="num">1.0000</td></tr>
+        <tr><td>A. Raw pages (front matter + headers kept)</td><td>hybrid</td><td class="num">45</td><td class="num">0.6667</td><td class="num">0.9000</td><td class="num">0.7708</td><td class="num">0.8594</td><td class="num">0.8182</td><td class="num">1.0000</td></tr>
+        <tr><td>B. Front matter dropped, running headers stripped</td><td>sparse</td><td class="num">43</td><td class="num">0.6667</td><td class="num">0.8333</td><td class="num">0.7567</td><td class="num">0.8486</td><td class="num">0.7273</td><td class="num">1.0000</td></tr>
+        <tr class="win"><td>B. Front matter dropped, running headers stripped</td><td>hybrid</td><td class="num">43</td><td class="num">0.7000</td><td class="num">0.9000</td><td class="num">0.7981</td><td class="num">0.8874</td><td class="num">0.8182</td><td class="num">1.0000</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="winner-line">
+    <b>Winner</b>
+    Variant B &mdash; drop front matter, strip running headers. Only 2 of 45 pages are removed
+    (contract p1, cargo p2), no gold answer span lives on either, and the eval labels still validate
+    30/30.
+  </div>
+
+  <p>
+    The mechanism matters more than the delta. <strong>A table of contents is worse than useless.</strong>
+    It lists every rule title in the document &mdash; <code>RULE 20: DENIED BOARDING COMPENSATION</code>,
+    <code>G32 Limit of Liability</code> &mdash; so to BM25 it looks maximally relevant to almost any
+    topical query while containing no rule text to answer with. It is a chunk engineered to win retrieval
+    and then say nothing.
+  </p>
+  <p>
+    The running header is the subtler defect. <em>Delta Domestic General Rules Tariff</em> appears on all
+    23 pages of the passenger contract, so the terms &ldquo;domestic&rdquo;, &ldquo;rules&rdquo; and
+    &ldquo;tariff&rdquo; are indexed 23 times inside the passenger document. That is why a <em>cargo</em>
+    question phrased as &ldquo;rules for shipping cargo domestically&rdquo; was pulled toward the
+    passenger contract. The cross-contamination this group is specifically graded on was partly caused by
+    page furniture.
+  </p>
+  <p>
+    This was found by debugging a <strong>failing required acceptance test</strong>, not by reading the
+    PDFs. The aggregate retrieval metrics were already respectable while that test was failing for a
+    cause no aggregate number surfaced.
+  </p>
+
+  <!-- ---------- STAGE 0c ---------- -->
+  <div class="stage-head" id="stage0c">
+    <span class="sid">Stage 0c</span>
+    <h3>Routing policy</h3>
+  </div>
+  <p class="question">
+    <b>Question</b>
+    What evidence should decide which business line a question belongs to?
+  </p>
+
+  <div class="table-wrap">
+    <table>
+      <caption>Stage 0c &mdash; routing policy</caption>
+      <thead>
+        <tr><th>Routing policy</th><th class="num">Route acc (30 eval questions)</th><th class="num">Route acc (all 33 cases)</th><th class="num">Misroutes</th></tr>
+      </thead>
+      <tbody>
+        <tr class="win"><td>top-1 chunk</td><td class="num">1.0000</td><td class="num">0.9714</td><td class="num">1</td></tr>
+        <tr class="neg"><td>rank-weighted vote (top-5)</td><td class="num">0.9667</td><td class="num">0.9143</td><td class="num">3</td></tr>
+        <tr class="neg"><td>vote + defined-term prior</td><td class="num">0.9667</td><td class="num">0.9143</td><td class="num">3</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="winner-line">
+    <b>Winner</b>
+    Top-1 chunk &mdash; 1.0000 on the 30 eval questions and 0.9714 across all 33 cases, with a single
+    misroute. Full discussion in <a href="#routing">Section 5</a>.
+  </div>
+
+  <!-- ---------- STAGE 1 ---------- -->
+  <div class="stage-head" id="stage1">
+    <span class="sid">Stage 1</span>
+    <h3>Parsing strategy</h3>
+  </div>
+  <p class="question">
+    <b>Question</b>
+    Which PDF text extractor preserves the evidence a grounded citation needs?
+  </p>
+
+  <div class="table-wrap">
+    <table>
+      <caption>Stage 1 &mdash; parsing strategy</caption>
+      <thead>
+        <tr>
+          <th>Parser</th><th class="num">Clean text %</th><th class="num">Gold spans recoverable</th>
+          <th class="num">Parse time (s)</th><th class="num">R@1</th><th class="num">R@3</th>
+          <th class="num">MRR@10</th><th class="num">DCG@3</th><th class="num">NDCG@3</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>pypdf</td><td class="num">97.8%</td><td class="num cell-neg">96.7%</td><td class="num">1.58</td><td class="num">0.7333</td><td class="num">0.8667</td><td class="num">0.8078</td><td class="num">3.9043</td><td class="num">0.8877</td></tr>
+        <tr class="neg"><td>pdfplumber</td><td class="num">97.8%</td><td class="num">100.0%</td><td class="num">4.47</td><td class="num">0.6333</td><td class="num">0.8000</td><td class="num">0.7329</td><td class="num">3.5587</td><td class="num">0.8174</td></tr>
+        <tr class="win"><td>pymupdf</td><td class="num">97.8%</td><td class="num">100.0%</td><td class="num">0.30</td><td class="num">0.7000</td><td class="num">0.9000</td><td class="num">0.8011</td><td class="num">3.7964</td><td class="num">0.8762</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="winner-line">
+    <b>Winner</b>
+    PyMuPDF &mdash; 100% gold-span recovery, highest R@3 (0.9000), and the fastest of the three at 0.30 s.
+  </div>
+
+  <p>
+    All three parsers extract all 45 pages and clear the clean-text bar at 97.8%, so the usual
+    &ldquo;clean text %&rdquo; column does not separate them. The column that does is gold-span
+    recoverability: <strong>pypdf loses one of the 30 answer spans</strong>, rendering
+    <code>those</code> as <code>t hose</code> on contract page 4 (question P07). The page is still
+    retrievable &mdash; which is why R@3 barely moves &mdash; but the verbatim evidence needed to ground a
+    citation is gone. pdfplumber matches PyMuPDF on recovery but is roughly 15&times; slower, and its
+    table-extraction advantage is irrelevant here because neither tariff stores its rules in ruled tables.
+  </p>
+
+  <!-- ---------- STAGE 2 ---------- -->
+  <div class="stage-head" id="stage2">
+    <span class="sid">Stage 2</span>
+    <h3>Chunking strategy</h3>
+  </div>
+  <p class="question">
+    <b>Question</b>
+    Does splitting on the documents' own rule structure beat a generic splitter?
+  </p>
+
+  <div class="table-wrap">
+    <table>
+      <caption>Stage 2 &mdash; chunking strategy</caption>
+      <thead>
+        <tr>
+          <th>Strategy</th><th class="num">Chunk size</th><th class="num">Overlap</th><th class="num">Chunks</th>
+          <th class="num">R@1</th><th class="num">R@3</th><th class="num">MRR@10</th><th class="num">DCG@3</th><th class="num">NDCG@3</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>fixed</td><td class="num">300</td><td class="num">0</td><td class="num">512</td><td class="num">0.6667</td><td class="num">0.8333</td><td class="num">0.7462</td><td class="num">3.5404</td><td class="num">0.8217</td></tr>
+        <tr><td>fixed</td><td class="num">500</td><td class="num">0</td><td class="num">473</td><td class="num">0.6000</td><td class="num">0.7667</td><td class="num">0.7037</td><td class="num">3.5000</td><td class="num">0.8325</td></tr>
+        <tr><td>fixed</td><td class="num">800</td><td class="num">0</td><td class="num">451</td><td class="num">0.7000</td><td class="num">0.7667</td><td class="num">0.7500</td><td class="num">3.5194</td><td class="num">0.8640</td></tr>
+        <tr><td>fixed_ov</td><td class="num">300</td><td class="num">50</td><td class="num">532</td><td class="num">0.7333</td><td class="num">0.8000</td><td class="num">0.7839</td><td class="num">3.8420</td><td class="num">0.8452</td></tr>
+        <tr><td>fixed_ov</td><td class="num">500</td><td class="num">50</td><td class="num">480</td><td class="num">0.6333</td><td class="num">0.7667</td><td class="num">0.7187</td><td class="num">3.5020</td><td class="num">0.8186</td></tr>
+        <tr><td>fixed_ov</td><td class="num">500</td><td class="num">100</td><td class="num">487</td><td class="num">0.6667</td><td class="num">0.8000</td><td class="num">0.7450</td><td class="num">3.7682</td><td class="num">0.8650</td></tr>
+        <tr><td>fixed_ov</td><td class="num">800</td><td class="num">100</td><td class="num">456</td><td class="num">0.6000</td><td class="num">0.8000</td><td class="num">0.6987</td><td class="num">3.4658</td><td class="num">0.8482</td></tr>
+        <tr><td>recursive</td><td class="num">300</td><td class="num">50</td><td class="num">547</td><td class="num">0.7000</td><td class="num">0.8333</td><td class="num">0.7792</td><td class="num">3.7500</td><td class="num">0.8410</td></tr>
+        <tr class="win"><td>recursive</td><td class="num">500</td><td class="num">50</td><td class="num">491</td><td class="num">0.7000</td><td class="num">0.9000</td><td class="num">0.8011</td><td class="num">3.7964</td><td class="num">0.8762</td></tr>
+        <tr><td>recursive</td><td class="num">500</td><td class="num">100</td><td class="num">495</td><td class="num">0.7000</td><td class="num">0.8333</td><td class="num">0.7781</td><td class="num">3.8797</td><td class="num">0.8627</td></tr>
+        <tr class="tie"><td>recursive</td><td class="num">800</td><td class="num">100</td><td class="num">463</td><td class="num">0.6667</td><td class="num">0.9000</td><td class="num">0.7807</td><td class="num">3.8428</td><td class="num">0.8801</td></tr>
+        <tr class="tie"><td>rule_aware</td><td class="num">300</td><td class="num">50</td><td class="num">554</td><td class="num">0.7000</td><td class="num">0.9000</td><td class="num">0.7937</td><td class="num">3.7631</td><td class="num">0.8375</td></tr>
+        <tr><td>rule_aware</td><td class="num">500</td><td class="num">50</td><td class="num">503</td><td class="num">0.6667</td><td class="num">0.8667</td><td class="num">0.7806</td><td class="num">3.7885</td><td class="num">0.8635</td></tr>
+        <tr class="tie"><td>rule_aware</td><td class="num">800</td><td class="num">100</td><td class="num">475</td><td class="num">0.7000</td><td class="num">0.9000</td><td class="num">0.7981</td><td class="num">3.7833</td><td class="num">0.8874</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="winner-line">
+    <b>Winner</b>
+    recursive, 500 tokens, 50 overlap &mdash; R@3 0.9000, MRR@10 0.8011, selected on the metric priority
+    R@3 &rarr; MRR@10 &rarr; NDCG@3. Three other configurations tie it on R@3 (blue rows).
+  </div>
+
+  <div class="callout c-amber">
+    <span class="clabel">Statistical margin</span>
+    <p>
+      With n = 30, <strong>one question is worth 0.0333 of R@3</strong>. The top four configurations
+      here all tie at R@3 = 0.9000 and are separated by less than 0.01 MRR@10 &mdash; under a third of one
+      question. <code>recursive 500/50</code> is selected on the declared metric priority, but the honest
+      reading is that <strong>chunking strategy is not a decisive lever on this corpus</strong> once front
+      matter is removed. This winner should be read as &ldquo;no worse than the alternatives&rdquo;, not
+      &ldquo;better&rdquo;.
+    </p>
+  </div>
+
+  <div class="callout">
+    <span class="clabel">Negative result</span>
+    <p>
+      <code>rule_aware</code> was a <strong>custom, document-specific strategy I built</strong> to split
+      on the documents' own <code>RULE 20:</code> / <code>G14</code> headings, on the reasoning that a rule
+      heading is a genuine semantic boundary rather than an arbitrary token offset. I expected it to win.
+      <strong>It did not.</strong> Both tariffs are already written as short numbered rules, so any sane
+      splitter lands boundaries in roughly the right place anyway. That is a useful negative result about
+      how much document-specific engineering this corpus actually rewards &mdash; and the only way to know
+      was to build it and measure it against the generic strategies.
+    </p>
+  </div>
+
+  <!-- ---------- STAGE 3 ---------- -->
+  <div class="stage-head" id="stage3">
+    <span class="sid">Stage 3</span>
+    <h3>Embedding model</h3>
+  </div>
+  <p class="question">
+    <b>Question</b>
+    Which sentence embedding model earns its latency on this corpus?
+  </p>
+
+  <div class="table-wrap">
+    <table>
+      <caption>Stage 3 &mdash; embedding model</caption>
+      <thead>
+        <tr>
+          <th>Embedding model</th><th>Key</th><th class="num">Dimensions</th><th class="num">Latency (ms/query)</th>
+          <th class="num">R@1</th><th class="num">R@3</th><th class="num">MRR@10</th><th class="num">DCG@3</th><th class="num">NDCG@3</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="tie"><td>sentence-transformers/all-MiniLM-L6-v2</td><td>minilm</td><td class="num">384</td><td class="num">1.2</td><td class="num">0.7000</td><td class="num">0.9000</td><td class="num">0.7889</td><td class="num">3.7412</td><td class="num">0.8844</td></tr>
+        <tr class="win"><td>BAAI/bge-small-en-v1.5</td><td>bge-small</td><td class="num">384</td><td class="num">1.7</td><td class="num">0.7000</td><td class="num">0.9000</td><td class="num">0.8011</td><td class="num">3.7964</td><td class="num">0.8762</td></tr>
+        <tr class="neg"><td>nomic-embed-text:latest</td><td>nomic</td><td class="num">768</td><td class="num">15.3</td><td class="num">0.7667</td><td class="num">0.8333</td><td class="num">0.8119</td><td class="num">3.7571</td><td class="num">0.8445</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="winner-line">
+    <b>Winner</b>
+    BAAI/bge-small-en-v1.5 &mdash; R@3 0.9000, MRR@10 0.8011, at 1.7 ms/query. MiniLM ties on R@3 and is
+    behind on MRR@10 and DCG@3; nomic buys +0.0108 MRR@10 for a 9&times; latency increase and loses R@3.
+  </div>
+
+  <p>
+    <code>bge-small</code> and <code>nomic</code> are asymmetric models: they are trained to embed queries
+    and passages with different instruction prefixes. Those prefixes are applied here
+    (<code>Represent this sentence for searching relevant passages:</code> and
+    <code>search_query:</code>/<code>search_document:</code> respectively). Benchmarking them without
+    their prefixes is a common error that would have understated both and handed the stage to MiniLM by
+    default. Latency is measured after a warm-up call so model load is excluded;
+    <code>nomic</code> pays a network round-trip to Ollama that the two in-process sentence-transformers
+    models do not.
+  </p>
+
+  <!-- ---------- STAGE 4 ---------- -->
+  <div class="stage-head" id="stage4">
+    <span class="sid">Stage 4</span>
+    <h3>Vector database</h3>
+  </div>
+  <p class="question">
+    <b>Question</b>
+    FAISS or ChromaDB &mdash; and can this decision be made on retrieval quality at all?
+  </p>
+
+  <div class="table-wrap">
+    <table>
+      <caption>Stage 4 &mdash; vector database</caption>
+      <thead>
+        <tr>
+          <th>Vector DB</th><th class="num">Index build time (ms)</th><th>Metadata filtering</th><th>Persistence</th>
+          <th class="num">R@1</th><th class="num">R@3</th><th class="num">MRR@10</th><th class="num">DCG@3</th><th class="num">NDCG@3</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="win"><td>faiss</td><td class="num">0.06</td><td>emulated</td><td>yes</td><td class="num">0.7000</td><td class="num">0.9000</td><td class="num">0.8011</td><td class="num">3.7964</td><td class="num">0.8762</td></tr>
+        <tr class="tie"><td>chromadb</td><td class="num">255.72</td><td>native</td><td>yes</td><td class="num">0.7000</td><td class="num">0.9000</td><td class="num">0.8011</td><td class="num">3.7964</td><td class="num">0.8762</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="winner-line">
+    <b>Winner</b>
+    FAISS &mdash; selected on operational grounds, not quality. Retrieval metrics are identical to four
+    decimal places.
+  </div>
+
+  <p>
+    R@3 is reported as a parity check and behaves as the methodology predicts: identical embeddings
+    retrieve near-identically regardless of store, so this decision <em>cannot</em> be made on quality.
+    FAISS builds its flat inner-product index roughly 4,000&times; faster at this corpus size and runs
+    in-process with no server, but has <strong>no native metadata filtering</strong> &mdash; business-line
+    scoping has to be emulated by over-fetching and post-filtering. ChromaDB supports <code>where</code>
+    filtering natively. At ~500 chunks the over-fetch cost is negligible and the build-time advantage is
+    what makes the whole ablation matrix practical to re-run. ChromaDB would be the better choice if this
+    corpus grew by an order of magnitude, where post-filtering starts to threaten recall.
+  </p>
+
+  <!-- ---------- STAGE 5 ---------- -->
+  <div class="stage-head" id="stage5">
+    <span class="sid">Stage 5</span>
+    <h3>Dense vs sparse vs hybrid</h3>
+  </div>
+  <p class="question">
+    <b>Question</b>
+    Is running two retrievers and fusing them justified, or does one mode dominate?
+  </p>
+  <p>
+    This is the strongest evidence in the study, and the table <code>REQUIREMENT.md</code> specifically
+    asks this group to break out by target document. The per-route columns are the actual argument for
+    or against hybrid.
+  </p>
+
+  <div class="table-wrap">
+    <table>
+      <caption>Stage 5 &mdash; retrieval mode, with per-route and keyword/semantic breakdown</caption>
+      <thead>
+        <tr>
+          <th>Mode</th><th class="num">R@1 (all)</th><th class="num">R@3 (all)</th>
+          <th class="num">R@3 (keyword)</th><th class="num">R@3 (semantic)</th>
+          <th class="num">R@3 (passenger)</th><th class="num">R@3 (cargo)</th><th class="num">R@3 (financial)</th>
+          <th class="num">MRR@10</th><th class="num">NDCG@3</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>Dense only</td><td class="num">0.6000</td><td class="num">0.7667</td><td class="num">0.7857</td><td class="num">0.7500</td><td class="num">0.9167</td><td class="num cell-neg">0.5455</td><td class="num">0.8571</td><td class="num">0.6822</td><td class="num">0.8473</td></tr>
+        <tr><td>Sparse (BM25) only</td><td class="num">0.7333</td><td class="num">0.8667</td><td class="num">0.8571</td><td class="num">0.8750</td><td class="num">1.0000</td><td class="num">0.8182</td><td class="num cell-neg">0.7143</td><td class="num">0.7956</td><td class="num">0.8323</td></tr>
+        <tr class="win"><td>Hybrid (RRF)</td><td class="num">0.7000</td><td class="num">0.9000</td><td class="num">0.8571</td><td class="num">0.9375</td><td class="num">1.0000</td><td class="num">0.8182</td><td class="num">0.8571</td><td class="num">0.8011</td><td class="num">0.8762</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="winner-line">
+    <b>Winner</b>
+    Hybrid &mdash; R@3 0.9000 overall, and it takes the better of the two single-mode retrievers on every
+    single route column.
+  </div>
+
+  <div class="callout c-green">
+    <span class="clabel">Why hybrid is justified</span>
+    <p>
+      The two retrievers have <strong>opposite weaknesses</strong>, not one dominant mode.
+      Sparse is perfect on passenger (<strong>1.0000</strong>) and collapses on financial
+      (<strong>0.7143</strong>) &mdash; passenger questions quote tariff vocabulary almost verbatim, which
+      is BM25's home ground. Dense is the reverse: strong on financial (<strong>0.8571</strong>), weakest
+      on cargo (<strong>0.5455</strong>).
+    </p>
+    <p>
+      Hybrid does not split the difference. On semantic queries it <strong>beats both</strong> &mdash;
+      0.9375 against 0.7500 dense and 0.8750 sparse. That is the argument for paying the complexity cost
+      of running two retrievers and fusing them. <strong>Had one mode dominated every column, fusion
+      would have been unjustifiable complexity</strong> and this table would have said so.
+    </p>
+  </div>
+
+  <!-- ---------- STAGE 6 ---------- -->
+  <div class="stage-head" id="stage6">
+    <span class="sid">Stage 6</span>
+    <h3>Fusion method and alpha sweep</h3>
+  </div>
+  <p class="question">
+    <b>Question</b>
+    Reciprocal rank fusion, or a weighted linear blend &mdash; and at what weighting?
+  </p>
+
+  <div class="table-wrap">
+    <table>
+      <caption>Stage 6 &mdash; hybrid merge method and weighting</caption>
+      <thead>
+        <tr><th>Merge method</th><th class="num">alpha</th><th class="num">R@3</th><th class="num">MRR@10</th><th class="num">NDCG@3</th></tr>
+      </thead>
+      <tbody>
+        <tr class="tie"><td>Reciprocal Rank Fusion (k = 60)</td><td class="num">&mdash;</td><td class="num">0.9000</td><td class="num">0.8011</td><td class="num">0.8762</td></tr>
+        <tr><td>Weighted linear</td><td class="num">0.2</td><td class="num">0.8667</td><td class="num">0.8059</td><td class="num">0.8461</td></tr>
+        <tr><td>Weighted linear</td><td class="num">0.3</td><td class="num">0.8667</td><td class="num">0.8069</td><td class="num">0.8426</td></tr>
+        <tr class="win"><td>Weighted linear</td><td class="num">0.5</td><td class="num">0.9333</td><td class="num">0.8319</td><td class="num">0.8849</td></tr>
+        <tr><td>Weighted linear</td><td class="num">0.7</td><td class="num">0.8667</td><td class="num">0.7656</td><td class="num">0.8547</td></tr>
+        <tr class="neg"><td>Weighted linear</td><td class="num">0.8</td><td class="num">0.8000</td><td class="num">0.7169</td><td class="num">0.8406</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="winner-line">
+    <b>Measured winner (shipped, with caveat)</b>
+    Weighted linear at alpha = 0.5 &mdash; R@3 0.9333, MRR@10 0.8319, NDCG@3 0.8849. Alpha weights the
+    dense side: <code>score = alpha &times; dense_norm + (1 &minus; alpha) &times; sparse_norm</code>,
+    both min-max normalised first because BM25 scores are unbounded while cosine similarity is capped at 1.
+  </div>
+
+  <div class="callout c-amber">
+    <span class="clabel">Statistical margin</span>
+    <p>
+      Weighted alpha = 0.5 leads RRF on R@3 by 0.0333, which on 30 questions is
+      <strong>exactly one question</strong> &mdash; the resolution limit of this eval set. The win is real
+      but weakly evidenced.
+    </p>
+    <p>
+      Worse, <strong>the alpha sweep is non-monotonic</strong>: R@3 runs
+      0.8667 &rarr; 0.8667 &rarr; <strong>0.9333</strong> &rarr; 0.8667 &rarr; 0.8000 across
+      alpha = 0.2 &rarr; 0.8. If alpha were capturing a real property of the corpus the curve would be
+      smooth. A spike at a single point is what <em>overfitting to a small set</em> looks like, not a tuned
+      optimum.
+    </p>
+    <p>
+      <strong>RRF remains the safer production choice</strong> &mdash; it carries no hyperparameter to
+      overfit and is invariant to the two retrievers' score scales, at the cost of being blind to margin.
+      If this eval set grew to 100+ questions I would expect the gap to close. The measured winner is
+      reported as measured, with the caveat attached.
+    </p>
+  </div>
+
+  <!-- ---------- STAGE 7 ---------- -->
+  <div class="stage-head" id="stage7">
+    <span class="sid">Stage 7</span>
+    <h3>Cross-encoder reranking</h3>
+  </div>
+  <p class="question">
+    <b>Question</b>
+    Does a cross-encoder reranking the shortlist improve ordering enough to pay for its latency?
+  </p>
+
+  <div class="table-wrap">
+    <table>
+      <caption>Stage 7 &mdash; cross-encoder reranking</caption>
+      <thead>
+        <tr><th>Config</th><th class="num">R@1</th><th class="num">R@3</th><th class="num">NDCG@3</th><th class="num">Added latency (ms)</th></tr>
+      </thead>
+      <tbody>
+        <tr class="win"><td>No reranker</td><td class="num">0.7333</td><td class="num">0.9333</td><td class="num">0.8849</td><td class="num">0.0</td></tr>
+        <tr class="neg"><td>+ Cross-encoder rerank (top-10 &rarr; top-3/5)</td><td class="num">0.7333</td><td class="num">0.8667</td><td class="num">0.8388</td><td class="num">103.7</td></tr>
+        <tr class="neg"><td>+ Cross-encoder rerank (top-20 &rarr; top-3/5)</td><td class="num">0.7333</td><td class="num">0.8667</td><td class="num">0.8343</td><td class="num">176.2</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="winner-line rejected">
+    <b>Rejected</b>
+    The cross-encoder reranker is not shipped. It makes retrieval worse and charges 103.7&ndash;176.2 ms
+    per query for the privilege.
+  </div>
+
+  <div class="callout c-red">
+    <span class="clabel">Negative result</span>
+    <p>
+      <strong>The reranker is rejected &mdash; it makes retrieval worse, not better.</strong>
+      NDCG@3 falls from <strong>0.8849</strong> with no reranker to <strong>0.8388</strong> at top-10 and
+      <strong>0.8343</strong> at top-20. R@3 drops from 0.9333 to 0.8667 at both pool sizes. It costs
+      176.2 ms at top-20 to be worse, and <strong>the damage grows with the candidate pool</strong>: the
+      more documents it is given to reorder, the more harm it does. This is the opposite of the textbook
+      result, so it needs an explanation rather than a shrug.
+    </p>
+    <p>
+      <strong>(a) Domain mismatch.</strong> <code>ms-marco-MiniLM-L-6-v2</code> is trained on MS MARCO
+      &mdash; short, factual web-search passages answering natural questions. This corpus is neither: it
+      is dense legal tariff prose full of cross-references (<code>as provided in Rule 20(c)(1)</code>) and
+      XBRL records that read as label-plus-numbers. The cross-encoder's learned notion of relevance
+      transfers poorly to both, so its confident reordering is confidently wrong.
+    </p>
+    <p>
+      <strong>(b) No headroom.</strong> Hybrid fusion already reaches R@3 = 0.9333. A reranker
+      <em>cannot add documents fusion never retrieved</em> &mdash; it can only reshuffle what is already
+      there. When the correct chunk is usually already in the top 3, any reshuffling is far more likely to
+      demote it than to promote it.
+    </p>
+    <p>
+      The general lesson is the one the methodology is built around: a reranker is a <em>conditional</em>
+      improvement, not an automatic one. Adding it on tutorial precedent would have cost this pipeline
+      both accuracy and latency.
+    </p>
+  </div>
+
+  <!-- ---------- STAGE 8 ---------- -->
+  <div class="stage-head" id="stage8">
+    <span class="sid">Stage 8</span>
+    <h3>LLM for generation</h3>
+  </div>
+  <p class="question">
+    <b>Question</b>
+    With retrieval held fixed at the winning configuration, which local generator produces the most
+    faithful, best-cited answers?
+  </p>
+  <p>
+    Retrieval is frozen at the Stage 0&ndash;7 winner and only the generator is varied, over the same 30
+    evaluation questions. Four models were run: <code>llama3.2:3b</code>, <code>qwen2.5:7b</code>,
+    <code>llama3.1:latest</code> and <code>gemma4:latest</code>.
+  </p>
+
+  <h4>Quota-free metrics (computed from the generation artefacts)</h4>
+  <div class="table-wrap">
+    <table>
+      <caption>Stage 8a &mdash; deterministic generation metrics, n = 30 per model</caption>
+      <thead>
+        <tr>
+          <th>Generator</th><th class="num">Route accuracy</th><th class="num">Valid-citation rate</th>
+          <th class="num">Mean generation latency</th><th class="num">Mean retrieval latency</th>
+          <th class="num">Mean answer length (words)</th><th class="num">Mean answer length (chars)</th>
+          <th class="num">Total run</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="win"><td>qwen2.5:7b</td><td class="num">1.0000</td><td class="num">0.9333</td><td class="num">16.41 s</td><td class="num">34.5 ms</td><td class="num">71.3</td><td class="num">446.7</td><td class="num">8.2 min</td></tr>
+        <tr><td>gemma4:latest</td><td class="num">1.0000</td><td class="num">0.9333</td><td class="num">14.51 s</td><td class="num">32.6 ms</td><td class="num">106.9</td><td class="num">669.5</td><td class="num">7.3 min</td></tr>
+        <tr><td>llama3.1:latest</td><td class="num">1.0000</td><td class="num">0.9000</td><td class="num">17.73 s</td><td class="num">34.9 ms</td><td class="num">85.1</td><td class="num">529.4</td><td class="num">8.9 min</td></tr>
+        <tr><td>llama3.2:3b</td><td class="num">1.0000</td><td class="num cell-neg">0.7333</td><td class="num">8.42 s</td><td class="num">42.7 ms</td><td class="num">95.2</td><td class="num">592.7</td><td class="num">4.2 min</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="tablenote">
+    Computed from <code>reports/results/generations__*.json</code>. Valid-citation rate is the share of
+    the 30 answers whose <code>[n]</code> markers all resolve to a retrieved source. No answer was blocked
+    by a guardrail on this set, so all 30 are generation cases for every model.
+  </p>
+
+  <div class="callout c-green">
+    <span class="clabel">Control check</span>
+    <p>
+      <strong>Route accuracy is 1.0000 for all four models, by construction.</strong> Routing happens
+      before generation, so changing the generator cannot change the route. The column is included
+      precisely because its being identical is the evidence that the experiment isolated the variable it
+      claims to isolate. <code>llama3.2:3b</code> is fastest by roughly 2&times; but pays for it with the
+      worst citation discipline of the four (0.7333) &mdash; eight of thirty answers cite something the
+      retriever did not return.
+    </p>
+  </div>
+
+  <h4>Judged quality &mdash; RAGAS and DeepEval</h4>
+  <div class="table-wrap">
+    <table>
+      <caption>Stage 8b &mdash; end-to-end judged scores on the final pipeline</caption>
+      <thead>
+        <tr>
+          <th rowspan="2">Generator</th>
+          <th colspan="4" class="num" style="text-align:center;">RAGAS &mdash; judge qwen2.5-7b-judge (local, num_ctx 8192)</th>
+          <th colspan="2" class="num" style="text-align:center;">DeepEval &mdash; judge llama3.1:8b</th>
+        </tr>
+        <tr>
+          <th class="num">faithfulness</th><th class="num">answer_relevancy</th>
+          <th class="num">context_precision</th><th class="num">context_recall</th>
+          <th class="num">answer_relevancy</th><th class="num">faithfulness</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="win">
+          <td>qwen2.5:7b</td>
+          <td class="num">0.8986</td><td class="num">0.7404</td>
+          <td class="num">0.7676</td><td class="num">0.9139</td>
+          <td class="num pending-cell">&mdash;&nbsp;<span class="badge badge-pending">running</span></td>
+          <td class="num pending-cell">&mdash;&nbsp;<span class="badge badge-pending">running</span></td>
+        </tr>
+        <tr>
+          <td>llama3.2:3b</td>
+          <td class="num">0.7829</td><td class="num">0.6560</td>
+          <td class="num">0.7676</td><td class="num">0.9139</td>
+          <td class="num pending-cell">&mdash;&nbsp;<span class="badge badge-pending">running</span></td>
+          <td class="num pending-cell">&mdash;&nbsp;<span class="badge badge-pending">running</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="callout c-amber">
+    <span class="clabel">Pending &mdash; DeepEval</span>
+    <p>
+      <strong>RAGAS is complete for both judged models. DeepEval was still running at the time of
+      writing</strong>, so its columns are rendered as an explicit pending state rather than filled with
+      a placeholder number. The artefact
+      <code>reports/results/stage8_scores__deepeval.json</code> did not exist when this document was
+      generated.
+    </p>
+    <p>
+      To fill them in: re-run <code>scripts/stage8_evaluate.py</code> followed by
+      <code>scripts/build_report.py</code>. No number in this document should be treated as a DeepEval
+      result until that artefact exists.
+    </p>
+  </div>
+
+  <div class="callout c-green">
+    <span class="clabel">Control check &mdash; the experiment was correctly controlled</span>
+    <p>
+      <strong>context_precision (0.7676) and context_recall (0.9139) are identical across the two
+      models</strong> &mdash; to seven decimal places in the raw artefact. This is exactly as expected:
+      retrieval was held fixed while only the generator varied, and those two metrics are properties of
+      the <em>retrieval</em>, not of the generator. Had they differed, something other than the generator
+      would have changed between runs and the comparison would be void.
+    </p>
+    <p>
+      The two metrics that do depend on the generator move as expected:
+      <code>qwen2.5:7b</code> leads <code>llama3.2:3b</code> on faithfulness (0.8986 vs 0.7829) and on
+      answer_relevancy (0.7404 vs 0.6560) &mdash; consistent with its higher valid-citation rate in the
+      quota-free table above.
+    </p>
+  </div>
+</section>
+
+<!-- ============================= 5. ROUTING & GUARDRAILS ============================= -->
+<section id="routing">
+  <span class="sec-num">Section 5</span>
+  <h2>Routing and guardrails &mdash; the 30%</h2>
+
+  <p class="lead">
+    Passenger-vs-cargo routing carries 30% of the grade on its own. Three routing policies were built and
+    measured; the simplest won.
+  </p>
+
+  <div class="table-wrap">
+    <table>
+      <caption>Routing policy comparison (Stage 0c)</caption>
+      <thead>
+        <tr><th>Routing policy</th><th class="num">Route acc (30 eval questions)</th><th class="num">Route acc (all 33 cases)</th><th class="num">Misroutes</th></tr>
+      </thead>
+      <tbody>
+        <tr class="win"><td>top-1 chunk</td><td class="num">1.0000</td><td class="num">0.9714</td><td class="num">1</td></tr>
+        <tr class="neg"><td>rank-weighted vote (top-5)</td><td class="num">0.9667</td><td class="num">0.9143</td><td class="num">3</td></tr>
+        <tr class="neg"><td>vote + defined-term prior</td><td class="num">0.9667</td><td class="num">0.9143</td><td class="num">3</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="callout c-green">
+    <span class="clabel">Simplest won</span>
+    <p>
+      <strong>I built two &ldquo;better&rdquo; routers and both were worse than trusting the top-1
+      retrieved chunk.</strong> A rank-weighted vote over the top 5 scored <strong>0.9143</strong> across
+      all 33 cases. A vote plus a prior extracted from the documents' own definitions sections &mdash; 68
+      terms each document uniquely defines (24 passenger, 44 cargo), with terms both documents define such
+      as &ldquo;Carrier&rdquo; discarded as signal-free &mdash; also scored <strong>0.9143</strong>. Plain
+      top-1 scored <strong>1.0000</strong> on the eval questions and <strong>0.9714</strong> overall.
+    </p>
+    <p>
+      Both richer policies misroute <strong>R1</strong> (&ldquo;revenue from shipping cargo&rdquo;),
+      because lower-ranked cargo chunks outvote the single correct financial record. The added machinery
+      actively hurt, and it is off by default in the shipped pipeline.
+    </p>
+  </div>
+
+  <h3>Known limitation: R2</h3>
+  <p>
+    <strong>R2</strong> &mdash; &ldquo;What is Delta's liability limit for a damaged shipment?&rdquo;
+    &mdash; routes to the passenger contract, whose baggage-liability clause is genuinely the most
+    topically similar text in the corpus and even quotes a dollar figure ($4,700 per passenger). A
+    retriever is not wrong to surface it. The distinguishing signal is not similarity but vocabulary:
+    &ldquo;shipment&rdquo; is a term the cargo tariff defines and the passenger contract does not.
+  </p>
+  <p>
+    The defined-term prior fixes R2 &mdash; and breaks R1. Shipping a fix validated on the single case it
+    was built for would be overfitting, so no fix was shipped. It is documented as a limitation instead.
+  </p>
+
+  <h3>Guardrails: three deterministic checks plus a confidence floor</h3>
+  <div class="cards">
+    <div class="card">
+      <span class="tag">Pre-retrieval</span>
+      <h4>Out-of-scope carrier</h4>
+      <p>Deterministic detection of another airline in the question. Returns a canned refusal naming
+      Delta's three source documents. Runs before the carrier's name can contaminate retrieval, and
+      before the live-data check so &ldquo;status of my JetBlue flight&rdquo; is refused as out of scope
+      rather than merely deflected.</p>
+    </div>
+    <div class="card">
+      <span class="tag">Pre-retrieval</span>
+      <h4>Live-data request</h4>
+      <p>Detects booking, flight-status and account intent. Explains the bot answers general policy
+      questions from published documents only, and offers what it <em>can</em> answer. No LLM call is made.</p>
+    </div>
+    <div class="card">
+      <span class="tag">Post-retrieval</span>
+      <h4>Abstain gate</h4>
+      <p>Dense cosine similarity floor at <strong>0.67</strong> on the single best-matching chunk. Cosine
+      is used rather than the fused score because RRF scores are a rank artefact with no absolute meaning
+      and no cross-query comparability; cosine is bounded in [0, 1].</p>
+    </div>
+    <div class="card">
+      <span class="tag">Post-generation</span>
+      <h4>Citation verification</h4>
+      <p>Every <code>[n]</code> marker in the answer is checked against the retrieved source list. The
+      API returns <code>citations_valid</code> and the UI surfaces it, so an unverified answer is visible
+      rather than silent.</p>
+    </div>
+  </div>
+
+  <h4>Abstain threshold calibration</h4>
+  <p>
+    Measured over the 30 answerable evaluation questions against 8 deliberately unanswerable probes
+    (international fees, SkyMiles earning, lounge hours, aircraft configuration &mdash; plausible Delta
+    questions whose answers are genuinely outside these three documents, and deliberately avoiding
+    competitor names and &ldquo;my booking&rdquo; phrasing so they exercise this gate rather than the
+    deterministic guards).
+  </p>
+
+  <div class="table-wrap">
+    <table>
+      <caption>Guardrail abstain-threshold trade-off curve</caption>
+      <thead>
+        <tr><th class="num">Threshold</th><th class="num">Answerable correctly answered</th><th class="num">Unanswerable correctly refused</th><th class="num">Sum</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class="num">0.55</td><td class="num">1.0000</td><td class="num">0.0000</td><td class="num">1.0000</td></tr>
+        <tr><td class="num">0.57</td><td class="num">1.0000</td><td class="num">0.0000</td><td class="num">1.0000</td></tr>
+        <tr><td class="num">0.59</td><td class="num">1.0000</td><td class="num">0.1250</td><td class="num">1.1250</td></tr>
+        <tr><td class="num">0.61</td><td class="num">1.0000</td><td class="num">0.1250</td><td class="num">1.1250</td></tr>
+        <tr><td class="num">0.63</td><td class="num">1.0000</td><td class="num">0.1250</td><td class="num">1.1250</td></tr>
+        <tr><td class="num">0.65</td><td class="num">1.0000</td><td class="num">0.1250</td><td class="num">1.1250</td></tr>
+        <tr class="win"><td class="num">0.67</td><td class="num">1.0000</td><td class="num">0.2500</td><td class="num">1.2500</td></tr>
+        <tr><td class="num">0.69</td><td class="num">0.9000</td><td class="num">0.3750</td><td class="num">1.2750</td></tr>
+        <tr><td class="num">0.71</td><td class="num">0.8667</td><td class="num">0.6250</td><td class="num">1.4917</td></tr>
+        <tr class="warn"><td class="num">0.73</td><td class="num">0.7667</td><td class="num">1.0000</td><td class="num">1.7667</td></tr>
+        <tr><td class="num">0.75</td><td class="num">0.5667</td><td class="num">1.0000</td><td class="num">1.5667</td></tr>
+        <tr><td class="num">0.77</td><td class="num">0.4333</td><td class="num">1.0000</td><td class="num">1.4333</td></tr>
+        <tr><td class="num">0.79</td><td class="num">0.3000</td><td class="num">1.0000</td><td class="num">1.3000</td></tr>
+        <tr><td class="num">0.81</td><td class="num">0.1667</td><td class="num">1.0000</td><td class="num">1.1667</td></tr>
+        <tr><td class="num">0.83</td><td class="num">0.1333</td><td class="num">1.0000</td><td class="num">1.1333</td></tr>
+        <tr class="neg"><td class="num">0.85</td><td class="num">0.0333</td><td class="num">1.0000</td><td class="num">1.0333</td></tr>
+        <tr class="neg"><td class="num">0.87</td><td class="num">0.0000</td><td class="num">1.0000</td><td class="num">1.0000</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="tablenote">
+    Chosen: <strong>0.67</strong> &mdash; answers 100% of answerable questions while refusing 25% of the
+    unanswerable probes. The amber row at 0.73 is the alternative that maximises refusals: it would also
+    refuse 23% of questions the pipeline answers correctly. The two populations overlap &mdash; the hardest
+    answerable question scores 0.674 while the most confidently-retrieved unanswerable probe scores 0.729
+    &mdash; so no threshold separates them perfectly. This is an explicit trade-off, not a solved problem.
+  </p>
+
+  <div class="callout">
+    <span class="clabel">Two-layer defence</span>
+    <p>
+      The abstain gate is the <strong>coarse outer layer</strong>, deliberately tuned to reject
+      <em>no</em> answerable question. The <strong>precise layer is the system prompt</strong>, which makes
+      the model decline from context it can actually read.
+    </p>
+    <p>
+      Acceptance probe <strong>G4</strong> proves it. Asked for a transatlantic third-bag fee, the bot
+      answered:
+    </p>
+    <p class="quote">
+      &ldquo;Delta's published documents do not cover checked bag fees for transatlantic flights as these
+      are U.S. domestic rules only [1]. Therefore, I cannot provide the specific fee amount you're asking
+      about based on the given sources.&rdquo;
+    </p>
+    <p>
+      That is a <strong>grounded refusal with a citation</strong>, on a question whose retrieval confidence
+      was <strong>high</strong>. Cosine similarity could never catch it, because the retrieved baggage
+      rules genuinely are the most topically similar text in the corpus &mdash; they simply do not contain
+      the answer. Tightening the cosine gate would buy refusals the prompt layer already handles better,
+      while losing real answers.
+    </p>
+  </div>
+
+  <h3>Acceptance test results</h3>
+  <div class="table-wrap">
+    <table>
+      <caption>Acceptance tests &mdash; 5/5 required (A1&ndash;A5), 10/11 overall</caption>
+      <thead>
+        <tr><th class="num">#</th><th>Question</th><th>Expected</th><th>Route</th><th>Blocked</th><th>Result</th><th>Detail</th></tr>
+      </thead>
+      <tbody>
+        <tr class="win"><td class="num">A1</td><td>What's Delta's policy on oversold flights?</td><td>answer</td><td>passenger</td><td>no</td><td><span class="badge badge-pass">Pass</span></td><td></td></tr>
+        <tr class="win"><td class="num">A2</td><td>What are the rules for shipping cargo domestically with Delta?</td><td>answer</td><td>cargo</td><td>no</td><td><span class="badge badge-pass">Pass</span></td><td></td></tr>
+        <tr class="win"><td class="num">A3</td><td>Can I get a refund on a non-refundable Delta ticket?</td><td>answer</td><td>passenger</td><td>no</td><td><span class="badge badge-pass">Pass</span></td><td></td></tr>
+        <tr class="win"><td class="num">A4</td><td>What's JetBlue's baggage policy?</td><td>refuse</td><td>&mdash;</td><td>yes</td><td><span class="badge badge-pass">Pass</span></td><td></td></tr>
+        <tr class="win"><td class="num">A5</td><td>What's the status of my flight tomorrow?</td><td>deflect</td><td>&mdash;</td><td>yes</td><td><span class="badge badge-pass">Pass</span></td><td></td></tr>
+        <tr><td class="num">G1</td><td>What is United Airlines' policy on denied boarding compensation?</td><td>refuse</td><td>&mdash;</td><td>yes</td><td><span class="badge badge-pass">Pass</span></td><td></td></tr>
+        <tr><td class="num">G2</td><td>Can you cancel my booking and refund my card?</td><td>deflect</td><td>&mdash;</td><td>yes</td><td><span class="badge badge-pass">Pass</span></td><td></td></tr>
+        <tr><td class="num">G3</td><td>What is Delta's pet cargo fee for shipping a dog to London in euros?</td><td>refuse_or_disclaim</td><td>passenger</td><td>no</td><td><span class="badge badge-pass">Pass</span></td><td></td></tr>
+        <tr><td class="num">G4</td><td>How much is Delta's checked bag fee for a third bag on a transatlantic flight?</td><td>refuse_or_disclaim</td><td>passenger</td><td>no</td><td><span class="badge badge-pass">Pass</span></td><td></td></tr>
+        <tr><td class="num">R1</td><td>How much revenue did Delta make from shipping cargo last year?</td><td>answer</td><td>financial</td><td>no</td><td><span class="badge badge-pass">Pass</span></td><td></td></tr>
+        <tr class="neg"><td class="num">R2</td><td>What is Delta's liability limit for a damaged shipment?</td><td>answer</td><td>passenger</td><td>no</td><td><span class="badge badge-fail">Fail</span></td><td>routed to passenger, expected cargo</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="tablenote">
+    A1&ndash;A5 are the five graded tests from <code>REQUIREMENT.md</code> section 6. G1&ndash;G4 are extra
+    guardrail probes: G1 names a competitor using in-corpus vocabulary (&ldquo;denied boarding&rdquo;) to
+    check the carrier guard is not fooled by familiar terminology; G2 is a transactional request; G3 and
+    G4 ask for fees that genuinely do not exist in these domestic-only documents &mdash; the case where a
+    RAG bot is most tempted to invent a number. R1 and R2 are the two cross-route traps.
+    <strong>Only R2 fails.</strong>
+  </p>
+</section>
+
+<!-- ============================= 6. APPLICATION ============================= -->
+<section id="application">
+  <span class="sec-num">Section 6</span>
+  <h2>The application</h2>
+
+  <div class="cards">
+    <div class="card">
+      <h4>FastAPI backend</h4>
+      <p>Four endpoints: <code>/health</code>, <code>/config</code>, <code>/examples</code>,
+      <code>/ask</code>. The pipeline is built once at startup because loading the embedding model and
+      building the FAISS index over the corpus takes roughly <strong>18 seconds</strong>; doing it per
+      request would be absurd. <code>/config</code> returns the measured pipeline configuration so the
+      running app can be checked against the report.</p>
+    </div>
+    <div class="card">
+      <h4>React 18 + TypeScript + Vite frontend</h4>
+      <p>Shows the routed business line on every answer, renders <code>[n]</code> citation markers as
+      superscript chips linked to the source list, and reports retrieval and generation latency plus a
+      citations-verified indicator per turn.</p>
+    </div>
+    <div class="card">
+      <h4>One source of truth</h4>
+      <p>All retrieval, routing, guardrail and generation logic lives in the transport-agnostic
+      <code>delta_rag</code> package. The backend is a thin transport layer over
+      <code>delta_rag.pipeline.DeltaSupportBot</code>, and the four notebooks import the same objects, so
+      the app and the evaluation cannot drift apart.</p>
+    </div>
+  </div>
+
+  <h3>Running it</h3>
+<pre><span class="cm"># Terminal 1 — API (builds the pipeline at startup, ~18 s)</span>
+.venv/bin/uvicorn backend.main:app --port 8000
+
+<span class="cm"># Terminal 2 — UI (Vite dev server on port 5173)</span>
+cd frontend &amp;&amp; npm run dev</pre>
+
+  <h3>Demo script for the class</h3>
+  <div class="cards">
+    <div class="card">
+      <span class="tag">Demo 1</span>
+      <h4>&ldquo;What's Delta's policy on oversold flights?&rdquo;</h4>
+      <div class="pdf-row"><span class="k">Expected</span><span class="v">Routes <strong>passenger</strong>, cites the Contract of Carriage.</span></div>
+      <div class="pdf-row"><span class="k">Point out</span><span class="v">The business-line badge on the answer, and the citation chips resolving to Rule 20.</span></div>
+    </div>
+    <div class="card">
+      <span class="tag">Demo 2</span>
+      <h4>&ldquo;What are the packaging requirements for shipping cargo with Delta?&rdquo;</h4>
+      <div class="pdf-row"><span class="k">Expected</span><span class="v">Routes <strong>cargo</strong>, cites the Shipping Rules Tariff.</span></div>
+      <div class="pdf-row"><span class="k">Point out</span><span class="v">A different document is scoped in, with no passenger-contract contamination.</span></div>
+    </div>
+    <div class="card">
+      <span class="tag">Demo 3 &mdash; the routing trap</span>
+      <h4>&ldquo;How much revenue did Delta make from shipping cargo last year?&rdquo;</h4>
+      <div class="pdf-row"><span class="k">Expected</span><span class="v">Routes <strong>financial</strong>, not cargo.</span></div>
+      <div class="pdf-row"><span class="k">Point out</span><span class="v">The question is lexically saturated with cargo vocabulary, but the answer ($900M) is a financial fact in the 10-K XBRL. This is the case that both &ldquo;smarter&rdquo; routers got wrong.</span></div>
+    </div>
+    <div class="card">
+      <span class="tag">Demo 4 &mdash; guardrail</span>
+      <h4>&ldquo;What's JetBlue's baggage policy?&rdquo;</h4>
+      <div class="pdf-row"><span class="k">Expected</span><span class="v">Refused as out of scope <strong>before retrieval even runs</strong>.</span></div>
+      <div class="pdf-row"><span class="k">Point out</span><span class="v">Retrieval latency is near-zero and no sources are returned &mdash; the refusal is deterministic, not a model deciding to behave.</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================= 7. WAR STORIES ============================= -->
+<section id="warstories">
+  <span class="sec-num">Section 7</span>
+  <h2>Engineering war stories</h2>
+
+  <p class="lead">
+    Seven problems that cost real time and that no tutorial warns about. Each is the kind of failure that
+    silently corrupts an evaluation rather than crashing it.
+  </p>
+
+  <div class="cards">
+
+    <div class="card">
+      <span class="tag">a &mdash; Performance</span>
+      <h4>Ollama allocates the maximum context window by default</h4>
+      <div class="pdf-row"><span class="k">Problem</span><span class="v">Generation took 30 seconds per answer, and per-model evaluation runs took between 52 minutes and 6.9 hours.</span></div>
+      <div class="pdf-row"><span class="k">Diagnosis</span><span class="v">Ollama allocates each model's <strong>maximum</strong> context unless told otherwise &mdash; 131,072 tokens for Llama 3.1 &mdash; reserving roughly 22 GB of GPU memory for a prompt that never approached it.</span></div>
+      <div class="pdf-row"><span class="k">Fix</span><span class="v">Cap <code>num_ctx</code> at 8192. GPU reservation dropped to 5.9 GB and per-model eval runs dropped to <strong>3&ndash;7 minutes</strong>.</span></div>
+    </div>
+
+    <div class="card">
+      <span class="tag">b &mdash; Correctness</span>
+      <h4>Silent NaN in evaluation frameworks</h4>
+      <div class="pdf-row"><span class="k">Problem</span><span class="v">Judge scores that looked plausible but were computed over almost no data.</span></div>
+      <div class="pdf-row"><span class="k">Diagnosis</span><span class="v">A rate-limited or timed-out judge call does not raise &mdash; it returns <code>NaN</code>. A mean taken over mostly-NaN values still produces a number, and that number looks like a real score.</span></div>
+      <div class="pdf-row"><span class="k">Fix</span><span class="v">Treat any harness that coerces failures into numbers as reporting confident nonsense until proven otherwise. Count non-NaN samples explicitly and refuse to report a metric that is missing data.</span></div>
+    </div>
+
+    <div class="card">
+      <span class="tag">c &mdash; Dependency</span>
+      <h4>RAGAS import crash on a package it never uses</h4>
+      <div class="pdf-row"><span class="k">Problem</span><span class="v">Importing RAGAS raised an <code>ImportError</code> on a clean environment.</span></div>
+      <div class="pdf-row"><span class="k">Diagnosis</span><span class="v">RAGAS imports <code>langchain_community.chat_models.vertexai</code>, which current <code>langchain-community</code> no longer ships &mdash; even though this project never touches Vertex AI.</span></div>
+      <div class="pdf-row"><span class="k">Fix</span><span class="v">Register a stub module under that name before the RAGAS import. The course's own <code>requirements.txt</code> notes the same problem, so this is not local breakage.</span></div>
+    </div>
+
+    <div class="card">
+      <span class="tag">d &mdash; Dependency</span>
+      <h4>DeepEval's hard-coded OpenAI model whitelist</h4>
+      <div class="pdf-row"><span class="k">Problem</span><span class="v">Pointing DeepEval at a local OpenAI-compatible endpoint was rejected despite the endpoint working for everything else.</span></div>
+      <div class="pdf-row"><span class="k">Diagnosis</span><span class="v"><code>GPTModel</code> validates the model name against a hard-coded OpenAI whitelist, so an OpenAI-compatible base URL is not sufficient &mdash; the <em>name</em> has to be an OpenAI name.</span></div>
+      <div class="pdf-row"><span class="k">Fix</span><span class="v">Switch to DeepEval's native <code>OllamaModel</code> / <code>GeminiModel</code> classes rather than fighting the whitelist.</span></div>
+    </div>
+
+    <div class="card">
+      <span class="tag">e &mdash; Measured and rejected</span>
+      <h4>Gemini free tier cannot sustain a judged evaluation</h4>
+      <div class="pdf-row"><span class="k">Problem</span><span class="v">Hosted judging looked like a way to get a stronger judge than a local 7B model.</span></div>
+      <div class="pdf-row"><span class="k">Diagnosis</span><span class="v">RAGAS needs roughly <strong>330 LLM calls per candidate model</strong> &mdash; context precision alone costs one call per retrieved context. The Gemini free tier allows about 20 requests per minute per model. Client-side pacing at 12 RPM still drew 429s, each carrying a server-mandated backoff of about 48 seconds, stalling throughput to <strong>2 jobs in 9 minutes</strong>. Separately, the <code>/v1beta/models</code> listing advertises models new keys cannot call: <code>gemini-2.5-flash</code> returns 404 &ldquo;no longer available to new users&rdquo;.</span></div>
+      <div class="pdf-row"><span class="k">Fix</span><span class="v">Local judges. They have no quota &mdash; the actual binding constraint &mdash; and returned complete scores with no NaN. Gemini is now opt-in behind <code>DELTA_RAG_JUDGE=gemini</code> for anyone with a paid key.</span></div>
+    </div>
+
+    <div class="card">
+      <span class="tag">f &mdash; Self-inflicted</span>
+      <h4>Resource contention from orphaned processes</h4>
+      <div class="pdf-row"><span class="k">Problem</span><span class="v">Identical API calls degraded run over run: 43 s &rarr; 57 s &rarr; 76 s &rarr; 78 s. Nothing in the code had changed.</span></div>
+      <div class="pdf-row"><span class="k">Diagnosis</span><span class="v">Orphaned Python processes left behind by interrupted evaluation runs had driven the 15-minute load average to <strong>21</strong>. The benchmark was measuring the machine, not the pipeline.</span></div>
+      <div class="pdf-row"><span class="k">Fix</span><span class="v">Kill the orphans before timing anything. Warm generation returned to roughly <strong>2 seconds</strong>. Any latency number taken during that window is worthless.</span></div>
+    </div>
+
+    <div class="card">
+      <span class="tag">g &mdash; Methodology</span>
+      <h4>Judge independence is not automatic</h4>
+      <div class="pdf-row"><span class="k">Problem</span><span class="v">Running RAGAS and DeepEval both feels like two independent checks on the same pipeline.</span></div>
+      <div class="pdf-row"><span class="k">Diagnosis</span><span class="v">Running both frameworks on the <strong>same</strong> judge model measures one model's opinion twice and then calls the agreement corroboration. It is a single point of failure wearing two hats.</span></div>
+      <div class="pdf-row"><span class="k">Fix</span><span class="v">Deliberately different model families: <strong>qwen2.5:7b for RAGAS</strong> and <strong>llama3.1:8b for DeepEval</strong>. Where the two frameworks then disagree, the correct conclusion is that neither number is reliable.</span></div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ============================= 8. RESULTS ============================= -->
+<section id="results">
+  <span class="sec-num">Section 8</span>
+  <h2>Results summary and honest limitations</h2>
+
+  <div class="table-wrap">
+    <table>
+      <caption>Final configuration and the evidence behind each choice</caption>
+      <thead><tr><th>Stage</th><th>Choice</th><th>Deciding evidence</th></tr></thead>
+      <tbody>
+        <tr><td>Parsing</td><td><strong>PyMuPDF</strong></td><td>100% gold-span recovery vs 96.7% for pypdf; 15&times; faster than pdfplumber</td></tr>
+        <tr><td>Chunking</td><td><strong>recursive, 500 tokens, 50 overlap</strong></td><td>R@3 0.9000 &mdash; tied at the top; margin under one question</td></tr>
+        <tr><td>Embeddings</td><td><strong>BAAI/bge-small-en-v1.5</strong></td><td>R@3 0.9000 and MRR@10 0.8011 at 1.7 ms/query</td></tr>
+        <tr><td>Vector store</td><td><strong>FAISS</strong></td><td>Exact parity with Chroma on every retrieval metric; far faster index build</td></tr>
+        <tr><td>Retrieval mode</td><td><strong>Hybrid</strong></td><td>R@3 0.9000 vs 0.7667 dense / 0.8667 sparse; wins every route column</td></tr>
+        <tr><td>Fusion</td><td><strong>Weighted linear, alpha = 0.5</strong></td><td>R@3 0.9333 vs 0.9000 RRF &mdash; one question, caveat attached</td></tr>
+        <tr class="neg"><td>Reranking</td><td><strong>None</strong></td><td>Cross-encoder lowered NDCG@3 to 0.8388 / 0.8343 and cost 103.7&ndash;176.2 ms</td></tr>
+        <tr><td>Routing</td><td><strong>Top-1 chunk</strong></td><td>1.0000 on the eval questions; beat both richer policies</td></tr>
+        <tr><td>Generation</td><td><strong>qwen2.5:7b</strong></td><td>RAGAS faithfulness 0.8986, valid-citation rate 0.9333</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>What actually moved the needle, ranked by measured impact</h3>
+  <ol class="ranked">
+    <li>
+      <strong>Vocabulary bridging on the financial route.</strong> Sparse financial R@3 went
+      0.1429 &rarr; 0.7143 (5&times;) and dense 0.5714 &rarr; 0.8571. Nothing in Stages 1&ndash;7 came close.
+    </li>
+    <li>
+      <strong>Removing 2 of 45 pages of front matter.</strong> Fixed a <em>failing required acceptance
+      test</em>; sparse R@3 0.7667 &rarr; 0.8333, cargo R@3 0.6364 &rarr; 0.7273, hybrid NDCG@3
+      0.8594 &rarr; 0.8874.
+    </li>
+    <li>
+      <strong>Hybrid retrieval.</strong> +0.1666 R@3 over dense, and the only configuration that is
+      strong on all three routes.
+    </li>
+    <li>
+      <strong>Embedding model.</strong> bge-small over MiniLM, for +0.5 ms/query. See the artefact-drift
+      note below &mdash; the earlier synthesis recorded a larger gap than the current Stage 3 re-run shows.
+    </li>
+    <li>
+      <strong>Chunking, fusion method, vector store.</strong> Differences at or inside the noise floor of
+      a 30-question set.
+    </li>
+    <li class="rk-neg">
+      <strong>Reranking.</strong> Actively harmful &mdash; a regression on both NDCG@3 and R@3, plus 100+ ms.
+    </li>
+  </ol>
+
+  <div class="callout c-red">
+    <span class="clabel">The uncomfortable conclusion</span>
+    <p>
+      The two largest wins came from <strong>looking at what the retriever actually returned</strong>,
+      while the canonical hyperparameter sweeps mostly produced ties. Both were found by investigating a
+      failure, not by tuning: the financial defect surfaced because dense and sparse failed
+      <em>identically</em> (a tell that the corpus, not the config, was at fault), and the boilerplate
+      defect surfaced because an acceptance test failed while every aggregate metric looked healthy.
+    </p>
+  </div>
+
+  <div class="callout c-amber">
+    <span class="clabel">Artefact drift &mdash; disclosed</span>
+    <p>
+      The narrative synthesis in <code>reports/REPORT_TEMPLATE.md</code> was written against an earlier
+      run and records &ldquo;+0.1333 R@3&rdquo; for bge-small over MiniLM, and an RRF selection for Stage 6.
+      The <strong>current measured artefacts</strong> in <code>reports/results/</code> supersede both:
+      Stage 3 shows MiniLM and bge-small tied at R@3 0.9000 with bge-small ahead on MRR@10
+      (0.8011 vs 0.7889) and DCG@3 (3.7964 vs 3.7412); and the shipped
+      <code>final_retrieval_config.json</code> uses weighted linear at alpha = 0.5. Every table in this
+      document is rendered from the JSON artefacts, not from the narrative. Re-running
+      <code>scripts/build_report.py</code> reconciles the prose.
+    </p>
+  </div>
+
+  <h3>Where the evidence is weak, stated plainly</h3>
+  <ul>
+    <li>
+      <strong>n = 30 is coarse.</strong> One question is worth 0.0333 R@3, so Stage 2, Stage 4 and Stage 6
+      are all decided <em>inside the noise floor</em>. Those winners should be read as &ldquo;no worse than
+      the alternatives&rdquo;, not &ldquo;better&rdquo;.
+    </li>
+    <li>
+      <strong>The alias map is the single largest lever and the most exposed to test-fitting.</strong>
+      It was written from 10-K statement conventions rather than from the eval questions, and is measured
+      in isolation (Stage 0 variant B vs C) so it can be discounted &mdash; but a held-out financial
+      question set is the only real check.
+    </li>
+    <li>
+      <strong>Both judges are local 7&ndash;8B models.</strong> Cheap and reproducible, but weaker than a
+      frontier judge. Where RAGAS and DeepEval disagree, the correct conclusion is that neither number is
+      reliable.
+    </li>
+    <li>
+      <strong>R2 is a known misroute.</strong> &ldquo;Liability limit for a damaged shipment&rdquo; routes
+      to the passenger contract. The defined-term prior fixes it but breaks R1, so no fix was shipped on
+      the strength of one case.
+    </li>
+  </ul>
+
+  <h3>What I would try next</h3>
+  <ol>
+    <li>
+      <strong>A held-out financial eval set</strong> phrased with vocabulary absent from the alias map.
+      This is the biggest threat to the project's headline claim and the cheapest to test.
+    </li>
+    <li>
+      <strong>LLM-based groundedness instead of a cosine floor.</strong> Probe G4 showed the
+      <em>model</em> refusing correctly at high retrieval confidence &mdash; it can read the context and
+      see the answer is absent, which cosine similarity fundamentally cannot. The threshold gate is the
+      weakest component: the answerable and unanswerable score distributions overlap, so no threshold
+      separates them.
+    </li>
+    <li>
+      <strong>A domain-tuned reranker.</strong> The Stage 7 failure was diagnosed as MS MARCO training
+      data not transferring to legal tariff prose. Fine-tuning a cross-encoder on tariff-style pairs would
+      test that diagnosis directly, rather than assuming it.
+    </li>
+    <li>
+      <strong>Multi-hop questions.</strong> Every current eval question is answerable from one chunk. A
+      real question like &ldquo;I was bumped <em>and</em> my bag was damaged &mdash; what am I owed?&rdquo;
+      needs Rule 20 and Rule 17 simultaneously, and flat top-k retrieval has no mechanism for composing
+      two rules.
+    </li>
+    <li>
+      <strong>Cross-route answers.</strong> Routing commits to exactly one business line to prevent
+      contamination. A shipper asking a question that legitimately spans the cargo rules <em>and</em> the
+      financial filings cannot be served at all &mdash; the anti-contamination fix has a cost this eval
+      set never probes.
+    </li>
+  </ol>
+</section>
+
+<!-- ============================= 9. REPRODUCIBILITY ============================= -->
+<section id="repro">
+  <span class="sec-num">Section 9</span>
+  <h2>Reproducibility</h2>
+
+  <p>
+    Every table in this document is regenerated by the sequence below. Tables are injected into the report
+    directly from the artefacts the ablation scripts write to <code>reports/results/</code>, so nothing is
+    retyped and nothing can drift from what was actually run.
+  </p>
+
+<pre><span class="cm"># Full reproduction, end to end</span>
+.venv/bin/python -m pytest                                <span class="cm"># 30 metric unit tests</span>
+PYTHONPATH=src .venv/bin/python -m delta_rag.evalset      <span class="cm"># validate the 30 labels</span>
+
+.venv/bin/python scripts/stage0_xbrl_representation.py    <span class="cm"># financial-route text</span>
+.venv/bin/python scripts/stage0b_boilerplate.py           <span class="cm"># front matter removal</span>
+.venv/bin/python scripts/run_retrieval_ablations.py       <span class="cm"># Stages 1-7</span>
+.venv/bin/python scripts/stage0c_routing.py               <span class="cm"># routing policy</span>
+.venv/bin/python scripts/calibrate_guardrail.py           <span class="cm"># abstain threshold</span>
+.venv/bin/python scripts/stage8_generate.py               <span class="cm"># Stage 8 generations</span>
+.venv/bin/python scripts/stage8_evaluate.py               <span class="cm"># RAGAS + DeepEval</span>
+.venv/bin/python scripts/run_acceptance_tests.py          <span class="cm"># graded acceptance tests</span>
+.venv/bin/python scripts/build_report.py                  <span class="cm"># rebuild the report</span></pre>
+
+  <h3>Environment</h3>
+  <div class="kv">
+    <div class="item"><span class="k">Python</span><span class="v">3.12 (venv at <code>.venv</code>)</span></div>
+    <div class="item"><span class="k">Inference</span><span class="v">Ollama, local, 127.0.0.1:11434</span></div>
+    <div class="item"><span class="k">RAGAS judge</span><span class="v">qwen2.5-7b-judge, num_ctx 8192</span></div>
+    <div class="item"><span class="k">DeepEval judge</span><span class="v">llama3.1:8b, num_ctx 8192</span></div>
+    <div class="item"><span class="k">Numpy</span><span class="v">2.5.2 (the <code>numpy&lt;2</code> pin is not needed here)</span></div>
+    <div class="item"><span class="k">Test suite</span><span class="v">30 unit tests, <code>pythonpath=src</code></span></div>
+  </div>
+
+  <p class="tablenote">
+    All LLM and embedding inference is local, so there is no hosted API spend and the whole study is
+    reproducible offline. The one exception is the opt-in Gemini judge behind
+    <code>DELTA_RAG_JUDGE=gemini</code>, which was measured, found to be quota-bound, and is not used for
+    any number in this document.
+  </p>
+
+  <h3>Outstanding</h3>
+  <p>
+    <span class="badge badge-pending">Pending</span>
+    DeepEval scores for <code>qwen2.5:7b</code> and <code>llama3.2:3b</code>. The artefact
+    <code>reports/results/stage8_scores__deepeval.json</code> does not yet exist. Re-run
+    <code>scripts/stage8_evaluate.py</code> then <code>scripts/build_report.py</code> to populate the
+    DeepEval columns in Stage 8b.
+  </p>
+</section>
+
+<footer class="docfoot">
+  <p>
+    Delta Air Lines Customer Support Assistant &mdash; Evaluation-Driven RAG.
+    Group 7, M10 RAG Capstone. All figures measured on this project's own 30-question labelled evaluation
+    set and reproduced from the artefacts in <code>reports/results/</code>.
+  </p>
+</footer>
+
+</main>
+
+<button id="toTop" type="button" aria-label="Back to top">Back to top</button>
+
+<script>
+(function () {
+  "use strict";
+
+  var links = Array.prototype.slice.call(
+    document.querySelectorAll('nav.sidebar a[href^="#"]')
+  );
+  var byId = {};
+  var targets = [];
+
+  links.forEach(function (a) {
+    var id = a.getAttribute("href").slice(1);
+    var el = document.getElementById(id);
+    if (el) {
+      byId[id] = a;
+      targets.push(el);
+    }
+  });
+
+  function setActive(id) {
+    links.forEach(function (a) { a.classList.remove("active"); });
+    if (byId[id]) {
+      byId[id].classList.add("active");
+      // Keep the active item visible inside a long sidebar.
+      var nav = document.querySelector("nav.sidebar");
+      if (nav && nav.scrollHeight > nav.clientHeight) {
+        var a = byId[id];
+        var top = a.offsetTop;
+        if (top < nav.scrollTop || top > nav.scrollTop + nav.clientHeight - 60) {
+          nav.scrollTop = Math.max(0, top - nav.clientHeight / 2);
+        }
+      }
+    }
+  }
+
+  // ---- Scroll-spy -------------------------------------------------------
+  if ("IntersectionObserver" in window) {
+    var visible = {};
+    var observer = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (e.isIntersecting) { visible[e.target.id] = e.intersectionRatio; }
+        else { delete visible[e.target.id]; }
+      });
+      // Pick the visible target closest to the top of the viewport.
+      var best = null, bestTop = Infinity;
+      targets.forEach(function (t) {
+        if (!(t.id in visible)) return;
+        var top = t.getBoundingClientRect().top;
+        var d = Math.abs(top - 90);
+        if (d < bestTop) { bestTop = d; best = t.id; }
+      });
+      if (best) { setActive(best); }
+    }, { rootMargin: "-70px 0px -55% 0px", threshold: [0, 0.05, 0.25, 0.5] });
+
+    targets.forEach(function (t) { observer.observe(t); });
+  } else {
+    // Fallback for very old engines.
+    window.addEventListener("scroll", function () {
+      var best = null, bestTop = -Infinity;
+      targets.forEach(function (t) {
+        var top = t.getBoundingClientRect().top;
+        if (top <= 120 && top > bestTop) { bestTop = top; best = t.id; }
+      });
+      if (best) { setActive(best); }
+    }, { passive: true });
+  }
+
+  // ---- Back to top ------------------------------------------------------
+  var btn = document.getElementById("toTop");
+  function toggleBtn() {
+    if (window.pageYOffset > 500) { btn.classList.add("show"); }
+    else { btn.classList.remove("show"); }
+  }
+  window.addEventListener("scroll", toggleBtn, { passive: true });
+  toggleBtn();
+
+  btn.addEventListener("click", function () {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    if (history.replaceState) { history.replaceState(null, "", "#top"); }
+    setActive("top");
+  });
+
+  // Clicking a nav link marks it active immediately.
+  links.forEach(function (a) {
+    a.addEventListener("click", function () {
+      setActive(a.getAttribute("href").slice(1));
+    });
+  });
+})();
+</script>
+
+</body>
+</html>

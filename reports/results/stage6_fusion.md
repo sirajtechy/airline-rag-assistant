@@ -11,10 +11,10 @@
 
 ## Reading of these numbers
 
-**Selected: Reciprocal Rank Fusion (k=60).** RRF and weighted linear at alpha = 0.5 tie exactly on R@3 (0.9000). They then split the secondary metrics: weighted leads MRR@10 by +0.0308 while RRF leads NDCG@3 by -0.0087.
+**Selected: weighted linear at alpha = 0.5** (R@3 = 0.9333, MRR@10 = 0.8319, NDCG@3 = 0.8849), ahead of RRF at R@3 = 0.9000.
 
-**Neither gap is real.** With 30 questions a single question is worth 0.0333 of R@3, so differences of ~0.02 on a secondary metric are smaller than the resolution of this eval set. Declaring a winner on that margin would be reading noise.
+**The margin is +0.0333 R@3 — exactly 1 question out of 30.** That is the resolution limit of this evaluation set, so the win is real but weakly evidenced, and it is reported as such rather than as a decisive result.
 
-The tie is therefore broken on robustness, and the alpha sweep itself is the evidence: R@3 goes 0.8333 -> 0.8333 -> 0.9000 -> 0.8333 -> 0.8667 across alpha = 0.2 -> 0.8. That curve is **non-monotonic and spiky**. If alpha were capturing a real property of the corpus the curve would be smooth, so the peak at 0.5 is far more likely to be a coincidence of these 30 questions than a tuned optimum — precisely the overfitting the methodology warns against. RRF has no alpha to overfit and is invariant to the two retrievers' score scales, so it is the safer choice at identical measured quality.
+**The alpha sweep is the reason for caution.** Across alpha = 0.2, 0.3, 0.5, 0.7, 0.8 the R@3 curve runs 0.8667 -> 0.8667 -> 0.9333 -> 0.8667 -> 0.8000 — **non-monotonic and spiky**. If alpha were capturing a real property of the corpus the curve would be smooth, so the peak is more plausibly a coincidence of these particular 30 questions than a tuned optimum. That is precisely the overfitting the methodology warns against, and it is why **RRF remains the safer production choice** despite losing this comparison: it has no alpha to overfit and is invariant to the two retrievers' score scales.
 
 For reference: alpha weights the dense side, `score = alpha * dense_norm + (1 - alpha) * sparse_norm`. Both distributions are min-max normalised first because BM25 scores are unbounded while cosine similarity is capped at 1; combining them raw would let BM25 dominate through scale rather than relevance. RRF sidesteps normalisation entirely by fusing ranks, at the cost of being blind to margin.

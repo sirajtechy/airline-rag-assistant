@@ -16,3 +16,7 @@ data/indexes/
 # Frontend
 node_modules/
 frontend/dist/
+
+# DeepEval local telemetry / cache
+.deepeval/
+.deepeval_telemetry.txt

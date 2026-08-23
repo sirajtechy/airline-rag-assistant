@@ -21,11 +21,6 @@ from delta_rag.config import RESULTS_DIR
 from delta_rag.evalset import load_eval_set
 from delta_rag.pipeline import DeltaSupportBot
 
-# Generation ran for all four; judging is limited to three by Gemini's free-tier
-# quota (20 requests/min per model). Three still spans a 3B-vs-7B-vs-8B size
-# contrast across two model families, comfortably above the methodology's
-# "at least 2" requirement. gemma4 generations remain on disk in
-# reports/results/ and are reported on the quota-free metrics.
 # Judged candidates. Two is the methodology's stated minimum and what this
 # hardware supports: local judging costs ~235 s per answer (RAGAS 103 s +
 # DeepEval 132 s), so each additional model adds ~2 h. These two give the widest
