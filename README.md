@@ -1,6 +1,6 @@
 # Delta Air Lines Customer Support Assistant — Evaluation-Driven RAG
 
-**Group 7 · M10 RAG Capstone**
+**Group 4 · M10 RAG Capstone**
 
 A retrieval-augmented support assistant over three real Delta Air Lines business
 lines, built so that **every pipeline decision is backed by a measured number**

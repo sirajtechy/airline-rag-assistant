@@ -1,4 +1,4 @@
-# Project notes — Delta Air Lines RAG (Group 7 capstone)
+# Project notes — Delta Air Lines RAG (Group 4 capstone)
 
 ## What this project is graded on
 Per `data/raw/EVALUATION_METHODOLOGY.md` (the authoritative spec):

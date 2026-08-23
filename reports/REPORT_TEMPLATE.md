@@ -1,6 +1,6 @@
 # Evaluation Report — Delta Air Lines Customer Support Assistant
 
-**Group 7 · M10 RAG Capstone**
+**Group 4 · M10 RAG Capstone**
 
 Every table below contains numbers measured on this project's own 30-question
 evaluation set. Tables are injected directly from the artefacts written by the

@@ -1,4 +1,4 @@
-# Delta Air Lines Customer Support RAG — Group 7 capstone
+# Delta Air Lines Customer Support RAG — Group 4 capstone
 # Exact resolved versions are captured in requirements.lock.txt (pip freeze).
 
 # ── Core orchestration (course stack, notebooks 01–02) ──

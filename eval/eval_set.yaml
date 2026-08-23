@@ -1,4 +1,4 @@
-# Delta RAG — labelled evaluation set (Group 7)
+# Delta RAG — labelled evaluation set (Group 4)
 #
 # Built BEFORE any pipeline design decision was made, per EVALUATION_METHODOLOGY.md Part B.
 #
@@ -26,7 +26,7 @@
 #   semantic = phrased the way a real customer would ask (favours dense retrieval)
 
 version: 1
-name: delta_group7_eval_v1
+name: delta_group4_eval_v1
 
 questions:
   # ─────────────────────────── PASSENGER (Contract of Carriage) ───────────────
