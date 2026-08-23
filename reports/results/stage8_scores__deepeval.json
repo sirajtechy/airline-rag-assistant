@@ -1,0 +1,18 @@
+{
+  "qwen2.5:7b": {
+    "faithfulness": 0.6643650793650794,
+    "answer_relevancy": 0.7095986810460495,
+    "hallucination": 0.675,
+    "g_eval_policy_accuracy": 0.9866666666666667,
+    "judge_model": "llama3.1-latest-judge:latest",
+    "hallucination_context": "ideal_answer (ground truth)",
+    "hallucination_previous_misconfigured": 0.5868253968253968
+  },
+  "llama3.2:3b": {
+    "faithfulness": 0.6358994708994709,
+    "answer_relevancy": 0.6990981240981241,
+    "hallucination": 0.598473909131804,
+    "g_eval_policy_accuracy": 0.9,
+    "judge_model": "llama3.1-latest-judge:latest"
+  }
+}

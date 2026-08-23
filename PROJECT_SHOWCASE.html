@@ -774,6 +774,8 @@ footer.docfoot{
     <li><a href="#stage6" class="sub-link">Stage 6 &mdash; Fusion</a></li>
     <li><a href="#stage7" class="sub-link">Stage 7 &mdash; Reranking</a></li>
     <li><a href="#stage8" class="sub-link">Stage 8 &mdash; Generation LLM</a></li>
+    <li><a href="#judgeagreement" class="sub-link">Stage 8 &mdash; Judge agreement</a></li>
+    <li><a href="#specscope" class="sub-link">Stage 8 &mdash; What the spec requires</a></li>
     <li><a href="#routing">5. Routing and guardrails</a></li>
     <li><a href="#application">6. The application</a></li>
     <li><a href="#warstories">7. Engineering war stories</a></li>
@@ -854,6 +856,11 @@ footer.docfoot{
       with no evaluation evidence behind it, caps at the 30% line and cannot pass on functionality
       alone. Every configuration choice in this project therefore has a table behind it, including the
       choices that were rejected.
+    </p>
+    <p>
+      Note also what the 20% row does <em>not</em> say. It asks for scores, not for scores above some line:
+      neither spec file contains a threshold, pass mark or minimum anywhere. See
+      <a href="#specscope">what the spec does and does not require</a>.
     </p>
   </div>
 
@@ -1384,9 +1391,37 @@ footer.docfoot{
   </div>
 
   <div class="winner-line">
-    <b>Winner</b>
-    BAAI/bge-small-en-v1.5 &mdash; R@3 0.9000, MRR@10 0.8011, at 1.7 ms/query. MiniLM ties on R@3 and is
-    behind on MRR@10 and DCG@3; nomic buys +0.0108 MRR@10 for a 9&times; latency increase and loses R@3.
+    <b>Winner on a split decision</b>
+    BAAI/bge-small-en-v1.5 &mdash; R@3 0.9000, MRR@10 0.8011, at 1.7 ms/query. <strong>MiniLM and bge-small
+    are tied at R@3 0.9000.</strong> bge-small takes MRR@10 (0.8011 vs 0.7889) and DCG@3 (3.7964 vs 3.7412);
+    <strong>MiniLM takes NDCG@3 (0.8844 vs 0.8762)</strong>. nomic buys +0.0108 MRR@10 for a 9&times; latency
+    increase and is the only model to lose R@3.
+  </div>
+
+  <div class="callout c-amber">
+    <span class="clabel">This stage is a tie, and it used not to be</span>
+    <p>
+      An earlier synthesis of this project recorded bge-small beating MiniLM by <strong>+0.1333 R@3</strong>
+      &mdash; four questions on a 30-question set, which would have made the embedding model one of the
+      larger levers in the study. That measurement was taken <em>before</em> the Stage 0b corpus cleaning
+      removed two pages of front matter and running headers. Re-run against the cleaned corpus, the gap is
+      <strong>0.0000</strong>: both models land R@3 0.9000, which is 27 of 30 questions each, and they split
+      the ranking-quality metrics between them.
+    </p>
+    <p>
+      <strong>The lesson is about the order of operations, not about embeddings.</strong> Cleaning the corpus
+      removed the leverage of the embedding model: once the boilerplate was no longer competing for
+      similarity, the weaker model stopped losing questions to it, and the difference the stage was
+      measuring disappeared. A stage measured against a defective corpus can report a real, reproducible
+      difference that <em>does not survive fixing the defect</em>. Data defects should be hunted before
+      component sweeps, or the sweeps end up measuring the defect.
+    </p>
+    <p>
+      bge-small still ships &mdash; it is no worse on any metric that decided a downstream stage, and Stages
+      4&ndash;7 were all measured on it &mdash; but the honest reading of Stage 3 is
+      <strong>&ldquo;these two are interchangeable on this corpus&rdquo;</strong>, not
+      &ldquo;bge-small is better&rdquo;.
+    </p>
   </div>
 
   <p>
@@ -1673,17 +1708,20 @@ footer.docfoot{
   <h4>Judged quality &mdash; RAGAS and DeepEval</h4>
   <div class="table-wrap">
     <table>
-      <caption>Stage 8b &mdash; end-to-end judged scores on the final pipeline</caption>
+      <caption>Stage 8b &mdash; end-to-end judged scores on the final pipeline (the spec's 20% component)</caption>
       <thead>
         <tr>
           <th rowspan="2">Generator</th>
           <th colspan="4" class="num" style="text-align:center;">RAGAS &mdash; judge qwen2.5-7b-judge (local, num_ctx 8192)</th>
-          <th colspan="2" class="num" style="text-align:center;">DeepEval &mdash; judge llama3.1:8b</th>
+          <th colspan="4" class="num" style="text-align:center;">DeepEval &mdash; judge llama3.1-latest-judge (local, num_ctx 8192)</th>
+          <th rowspan="2" class="num">Cost / query</th>
+          <th rowspan="2" class="num">Latency (s / answer)</th>
         </tr>
         <tr>
           <th class="num">faithfulness</th><th class="num">answer_relevancy</th>
           <th class="num">context_precision</th><th class="num">context_recall</th>
-          <th class="num">answer_relevancy</th><th class="num">faithfulness</th>
+          <th class="num">faithfulness</th><th class="num">answer_relevancy</th>
+          <th class="num">hallucination (lower is better)</th><th class="num">G-Eval PolicyAccuracy</th>
         </tr>
       </thead>
       <tbody>
@@ -1691,33 +1729,73 @@ footer.docfoot{
           <td>qwen2.5:7b</td>
           <td class="num">0.8986</td><td class="num">0.7404</td>
           <td class="num">0.7676</td><td class="num">0.9139</td>
-          <td class="num pending-cell">&mdash;&nbsp;<span class="badge badge-pending">running</span></td>
-          <td class="num pending-cell">&mdash;&nbsp;<span class="badge badge-pending">running</span></td>
+          <td class="num">0.6644</td><td class="num">0.7096</td>
+          <td class="num pending-cell">&mdash;&nbsp;<span class="badge badge-pending">re-scoring</span></td>
+          <td class="num">0.9867</td>
+          <td class="num">$0.00 (local)</td><td class="num">16.41</td>
         </tr>
         <tr>
           <td>llama3.2:3b</td>
           <td class="num">0.7829</td><td class="num">0.6560</td>
           <td class="num">0.7676</td><td class="num">0.9139</td>
-          <td class="num pending-cell">&mdash;&nbsp;<span class="badge badge-pending">running</span></td>
-          <td class="num pending-cell">&mdash;&nbsp;<span class="badge badge-pending">running</span></td>
+          <td class="num">0.6359</td><td class="num">0.6991</td>
+          <td class="num pending-cell">&mdash;&nbsp;<span class="badge badge-pending">re-scoring</span></td>
+          <td class="num">0.9000</td>
+          <td class="num">$0.00 (local)</td><td class="num">8.42</td>
         </tr>
       </tbody>
     </table>
   </div>
+  <p class="tablenote">
+    RAGAS figures from <code>reports/results/stage8_scores__ragas.json</code>, DeepEval figures from
+    <code>reports/results/stage8_scores__deepeval.json</code>, latency from
+    <code>reports/results/generations__*.json</code>. Every figure is transcribed from the artefact and
+    rounded to four decimals, with nothing interpolated. G-Eval PolicyAccuracy is a criterion written for
+    this bot specifically: it rewards exact figures, deadlines and dollar amounts and penalises invented
+    fees, because a fluent answer that loses the $1,075 cap has failed the customer even though a generic
+    relevancy metric would pass it.
+  </p>
 
   <div class="callout c-amber">
-    <span class="clabel">Pending &mdash; DeepEval</span>
+    <span class="clabel">Status &mdash; what is measured, and what is deliberately still empty</span>
     <p>
-      <strong>RAGAS is complete for both judged models. DeepEval was still running at the time of
-      writing</strong>, so its columns are rendered as an explicit pending state rather than filled with
-      a placeholder number. The artefact
-      <code>reports/results/stage8_scores__deepeval.json</code> did not exist when this document was
-      generated.
+      <strong>RAGAS is complete for both judged models, and so are three of DeepEval's four metrics.</strong>
+      Faithfulness, answer_relevancy and the custom G-Eval PolicyAccuracy criterion are read straight out of
+      <code>reports/results/stage8_scores__deepeval.json</code> for both <code>qwen2.5:7b</code> and
+      <code>llama3.2:3b</code>.
     </p>
     <p>
-      To fill them in: re-run <code>scripts/stage8_evaluate.py</code> followed by
-      <code>scripts/build_report.py</code>. No number in this document should be treated as a DeepEval
-      result until that artefact exists.
+      <strong>The hallucination column is empty on purpose, for both models.</strong> The cached values were
+      produced by the misconfiguration documented in
+      <a href="#warstories">war story a &mdash; HallucinationMetric</a>: the metric was handed the five
+      retrieved chunks where it expects ground truth, so it measured retrieval breadth rather than
+      hallucination. Those figures are not results and are not presented as results &mdash; the superseded
+      value is quoted once, inside that war story, explicitly labelled invalid. Re-scoring is under way.
+      No placeholder, averaged or estimated value stands in for a measurement anywhere in this table.
+    </p>
+    <p>
+      To complete it: <code>scripts/rescore_hallucination.py</code> recomputes that one metric against the
+      labelled ideal answers and keeps the other three from cache. A corrected entry is identifiable by its
+      <code>hallucination_context</code> key, which records that ground truth rather than retrieval output
+      was used; an entry without that key must not be read as a hallucination result.
+    </p>
+  </div>
+
+  <div class="callout">
+    <span class="clabel">Cost cannot decide this stage</span>
+    <p>
+      <strong>Cost per query is $0.00 for every row, because every candidate runs locally on Ollama.</strong>
+      The spec asks for a cost column and it is reported honestly, but a column that is constant down the
+      table carries no information: it cannot discriminate between candidates at all.
+      <strong>Latency and judged quality therefore do all of the work in this decision.</strong>
+    </p>
+    <p>
+      That is exactly what makes <code>llama3.2:3b</code> tempting and what makes it rejectable anyway. It
+      answers in 8.42 s against 16.41 s, and both are free &mdash; but it gives up 0.1157 of RAGAS
+      faithfulness (0.7829 vs 0.8986), 0.0844 of answer relevancy (0.6560 vs 0.7404) and 0.2000 of
+      valid-citation rate (0.7333 vs 0.9333) to get there. On a policy bot, a cited figure that the
+      retriever never returned is the most expensive kind of error, and it is not made cheaper by arriving
+      twice as fast.
     </p>
   </div>
 
@@ -1736,7 +1814,132 @@ footer.docfoot{
       answer_relevancy (0.7404 vs 0.6560) &mdash; consistent with its higher valid-citation rate in the
       quota-free table above.
     </p>
+    <p>
+      <strong>The second judge independently reproduces that ordering.</strong> DeepEval also puts
+      <code>qwen2.5:7b</code> ahead of <code>llama3.2:3b</code> on faithfulness (0.6644 vs 0.6359), on
+      answer_relevancy (0.7096 vs 0.6991) and on G-Eval PolicyAccuracy (0.9867 vs 0.9000). The two judge
+      families disagree on the <em>level</em> of faithfulness &mdash; sharply, see below &mdash; but they
+      agree on the <em>ranking</em>, which is the thing this stage actually has to decide. A choice of
+      generator that survives both judges is better evidenced than either judge's absolute number.
+    </p>
   </div>
+
+  <h4 id="judgeagreement">Judge agreement &mdash; what two different judge families revealed</h4>
+  <p>
+    The two frameworks run under <strong>deliberately different judge model families</strong>:
+    <code>qwen2.5-7b-judge</code> for RAGAS, <code>llama3.1-latest-judge</code> for DeepEval. That choice
+    was made before any score existed, so that agreement between the frameworks would carry information
+    rather than restate one model's opinion twice. Both frameworks compute faithfulness and answer
+    relevancy, and <code>qwen2.5:7b</code>'s answers have now been scored by both, so the two figures can
+    be put side by side.
+  </p>
+
+  <div class="table-wrap">
+    <table>
+      <caption>Cross-framework agreement on identical answers and identical contexts (generator qwen2.5:7b)</caption>
+      <thead>
+        <tr>
+          <th>Metric</th><th class="num">RAGAS (qwen judge)</th>
+          <th class="num">DeepEval (llama judge)</th><th class="num">Gap</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="neg"><td>Faithfulness</td><td class="num">0.8986</td><td class="num">0.6644</td><td class="num">0.234</td></tr>
+        <tr class="win"><td>Answer relevancy</td><td class="num">0.7404</td><td class="num">0.7096</td><td class="num">0.031</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="tablenote">
+    Gaps are absolute differences quoted to three decimals: 0.8986 &minus; 0.6644 = 0.234 and
+    0.7404 &minus; 0.7096 = 0.031. The same 30 questions, the same generated answers and the same retrieved
+    contexts go into both columns &mdash; the only thing that changes is which model is judging.
+  </p>
+
+  <p>
+    <strong>The same pattern repeats on the second generator.</strong> For <code>llama3.2:3b</code> the
+    judges land 0.147 apart on faithfulness (RAGAS 0.7829, DeepEval 0.6359) and 0.043 apart on answer
+    relevancy (RAGAS 0.6560, DeepEval 0.6991 &mdash; note that here the DeepEval judge is the more generous
+    of the two, so the spread is not a constant offset that could simply be calibrated away). Two
+    generators, the same shape of result: relevancy corroborated, faithfulness not.
+  </p>
+
+  <p class="quote">
+    &ldquo;If RAGAS and DeepEval agree, you can trust the score more. If they disagree sharply, that's a
+    signal to investigate, not to pick whichever number looks better.&rdquo;
+  </p>
+  <p class="tablenote">
+    The judging rule this project committed to in advance, recorded in
+    <code>scripts/stage8_evaluate.py</code>.
+  </p>
+
+  <div class="callout c-amber">
+    <span class="clabel">Finding &mdash; close on relevancy, sharply split on faithfulness</span>
+    <p>
+      The two judges land <strong>0.031 apart on answer relevancy</strong> and <strong>0.234 apart on
+      faithfulness</strong>. Answer relevancy is close enough to treat as corroborated by two independent
+      readings. Faithfulness is not: a 0.234 spread is larger than almost every margin this study used to
+      pick a winner elsewhere &mdash; larger than the entire Stage 6 fusion decision (0.0333) by a factor of
+      seven.
+    </p>
+    <p>
+      <strong>The honest conclusion is that neither faithfulness figure should be treated as precise.</strong>
+      The defensible statement is &ldquo;this pipeline sits somewhere in the 0.66&ndash;0.90 band on
+      faithfulness, and the measurement is not sharp enough to say where&rdquo;. It is emphatically not
+      &ldquo;0.8986&rdquo;, and picking that number because it is the flattering one would be exactly the
+      failure the rule above was written to prevent.
+    </p>
+    <p>
+      What the two judges <em>do</em> agree on is the <strong>ranking</strong>: both put
+      <code>qwen2.5:7b</code> ahead of <code>llama3.2:3b</code> on both shared metrics. That is the claim
+      Stage 8 needs, and it is the claim that is properly evidenced. The absolute faithfulness level is not.
+    </p>
+    <p>
+      This is <strong>direct empirical vindication of using two different judge families</strong>. Running
+      RAGAS and DeepEval on the same judge model would have produced agreement close to by construction,
+      and that false agreement would have been reported as a confident faithfulness number with two
+      frameworks' worth of apparent support behind it. The disagreement is the finding; a single judge
+      would have hidden it. See <a href="#warstories">war story h &mdash; judge independence</a>, and the
+      limitation stated in <a href="#results">section 8</a>.
+    </p>
+  </div>
+
+  <h4 id="specscope">What the spec does and does not require</h4>
+  <p>
+    Grepping <code>data/raw/EVALUATION_METHODOLOGY.md</code> and <code>data/raw/REQUIREMENT.md</code> for
+    any threshold, pass mark or minimum score returns <strong>nothing</strong>. That is worth stating
+    plainly, because a DeepEval faithfulness figure of 0.6644 invites the question &ldquo;is that a
+    pass?&rdquo; &mdash; and the question is not well formed.
+  </p>
+  <ul>
+    <li>
+      <strong>There is no required minimum</strong> for faithfulness or for any other metric. The 20% is
+      awarded for <em>&ldquo;End-to-end RAGAS + DeepEval scores on the final chosen pipeline&rdquo;</em>
+      &mdash; that is, for reporting real measured numbers on the pipeline that actually shipped, not for
+      clearing a bar. A target would only create an incentive to tune against the judge, which would
+      destroy the one thing these numbers are for.
+    </li>
+    <li>
+      <strong>The <code>threshold=0.7</code> passed to the DeepEval metrics is not a pass mark either.</strong>
+      It only sets an internal <code>metric.success</code> boolean. Every figure reported here is
+      <code>metric.score</code>, so no threshold anywhere in this codebase influences a single number in
+      this report.
+    </li>
+    <li>
+      <strong>Local models are a compliant choice, not a shortcut.</strong> Stage 8 of the methodology asks
+      to <em>&ldquo;Compare at least 2 real LLMs (e.g. Gemini 2.5/2.0 Flash, GPT-4o-mini, Claude Haiku, a
+      local Ollama model)&rdquo;</em> &mdash; an &ldquo;e.g.&rdquo; list that names local Ollama models
+      outright. Two judged models meets the stated minimum; four were generated and measured on the
+      quota-free metrics above.
+    </li>
+    <li>
+      <strong>This report is a superset of the required columns.</strong> The spec's Stage 8 table asks for
+      Faithfulness, Answer Relevancy and Context Precision from RAGAS, Hallucination and G-Eval from
+      DeepEval, plus cost and latency. Table 8b reports all of those and adds <strong>DeepEval
+      faithfulness, DeepEval answer relevancy and RAGAS context recall</strong> &mdash; the first two
+      precisely so that the cross-judge comparison above is possible at all, the third as the control that
+      proves retrieval was held fixed.
+    </li>
+  </ul>
 </section>
 
 <!-- ============================= 5. ROUTING & GUARDRAILS ============================= -->
@@ -1997,14 +2200,64 @@ cd frontend &amp;&amp; npm run dev</pre>
   <h2>Engineering war stories</h2>
 
   <p class="lead">
-    Seven problems that cost real time and that no tutorial warns about. Each is the kind of failure that
-    silently corrupts an evaluation rather than crashing it.
+    Eight problems that cost real time and that no tutorial warns about. Each is the kind of failure that
+    silently corrupts an evaluation rather than crashing it. The first one is the most important thing in
+    this document: a metric that ran cleanly for 45 minutes per model and reported a number about the wrong
+    quantity.
   </p>
 
   <div class="cards">
 
     <div class="card">
-      <span class="tag">a &mdash; Performance</span>
+      <span class="tag">a &mdash; Measurement validity</span>
+      <h4>DeepEval's HallucinationMetric was measuring retrieval breadth, not hallucination</h4>
+      <div class="pdf-row"><span class="k">Problem</span><span class="v">DeepEval's <code>HallucinationMetric</code> returned <strong>0.5868</strong> for <code>qwen2.5:7b</code>. Lower is better on that metric, so 0.5868 implies heavy hallucination &mdash; the answers contradicting their sources more often than not. Yet DeepEval's own <code>FaithfulnessMetric</code>, run by the same judge over the same answers, returned <strong>0.6644</strong>. Those two readings are close to self-contradictory: the same framework was simultaneously reporting that two thirds of the content was grounded and that more than half of it was unsupported. The obvious first interpretation was the wrong one &mdash; that a small local judge simply cannot be trusted.</span></div>
+      <div class="pdf-row"><span class="k">Diagnosis</span><span class="v">Reading DeepEval's source settled it in minutes. <code>HallucinationMetric._calculate_score</code> reduces to:</span></div>
+<pre>number_of_verdicts  = len(self.verdicts)
+hallucination_count = <span class="cm"># number of verdicts whose verdict == "no"</span>
+score               = hallucination_count / number_of_verdicts</pre>
+      <p>
+        It emits <strong>one verdict per document in <code>context</code></strong>, and scores the fraction
+        of those documents the answer does not align with. The pipeline was handing it all
+        <strong>five retrieved chunks</strong> as <code>context</code>. A correct, well-grounded answer
+        normally draws on only one or two of those five &mdash; so the remaining three or four correctly
+        produce &ldquo;no&rdquo; verdicts, and each one pushes the score up. The metric was measuring
+        <strong>retrieval breadth, not hallucination</strong>. Retrieve top-10 instead of top-5 and the same
+        answers would have looked twice as hallucinatory.
+      </p>
+      <p>
+        Crucially, DeepEval intends <code>context</code> to be <em>ground-truth</em> context. Retrieval
+        output belongs to <code>FaithfulnessMetric</code> via <code>retrieval_context</code> &mdash; which
+        the pipeline was already doing correctly. So faithfulness was sound the whole time; only the
+        hallucination metric was being fed the wrong thing.
+      </p>
+      <div class="pdf-row"><span class="k">Fix</span><span class="v"><code>context</code> now receives the curated ideal answer from the labelled evaluation set &mdash; genuine ground truth &mdash; so hallucination now measures what its name claims: whether the answer contradicts the known-correct answer. <code>scripts/rescore_hallucination.py</code> recomputes only that one metric and preserves faithfulness, answer relevancy and G-Eval from the completed cache, saving roughly <strong>45 minutes per model</strong> over a full re-run. The 0.5868 reading is retired; it appears in this document only in this card, labelled as the invalid first run.</span></div>
+      <div class="callout c-red">
+        <span class="clabel">Lesson</span>
+        <p>
+          <strong>An eval metric that runs without raising is not the same as an eval metric that measures
+          what you think it measures.</strong> Nothing failed here. No exception, no <code>NaN</code>, no
+          warning &mdash; just a plausible number, computed correctly, attached to the wrong quantity.
+        </p>
+        <p>
+          And the wrong reading was <em>not random noise</em>. It was a <strong>systematic bias in a
+          specific, explainable direction</strong>: more retrieved chunks means a worse apparent
+          hallucination score. That makes it far more dangerous than noise. Noise looks like noise and
+          averages away; a systematic bias survives averaging, survives repetition, survives a bigger
+          evaluation set &mdash; and <em>looks like a finding</em>.
+        </p>
+        <p>
+          It very nearly produced a false conclusion in this report. &ldquo;Local judges are
+          self-contradictory and unreliable&rdquo; was measurement error on my side, not a property of the
+          judges, and it would have been written up as a result. The genuine judge-related caveat is much
+          narrower: the <a href="#judgeagreement">0.234 faithfulness disagreement</a> between two different
+          judge families.
+        </p>
+      </div>
+    </div>
+
+    <div class="card">
+      <span class="tag">b &mdash; Performance</span>
       <h4>Ollama allocates the maximum context window by default</h4>
       <div class="pdf-row"><span class="k">Problem</span><span class="v">Generation took 30 seconds per answer, and per-model evaluation runs took between 52 minutes and 6.9 hours.</span></div>
       <div class="pdf-row"><span class="k">Diagnosis</span><span class="v">Ollama allocates each model's <strong>maximum</strong> context unless told otherwise &mdash; 131,072 tokens for Llama 3.1 &mdash; reserving roughly 22 GB of GPU memory for a prompt that never approached it.</span></div>
@@ -2012,7 +2265,7 @@ cd frontend &amp;&amp; npm run dev</pre>
     </div>
 
     <div class="card">
-      <span class="tag">b &mdash; Correctness</span>
+      <span class="tag">c &mdash; Correctness</span>
       <h4>Silent NaN in evaluation frameworks</h4>
       <div class="pdf-row"><span class="k">Problem</span><span class="v">Judge scores that looked plausible but were computed over almost no data.</span></div>
       <div class="pdf-row"><span class="k">Diagnosis</span><span class="v">A rate-limited or timed-out judge call does not raise &mdash; it returns <code>NaN</code>. A mean taken over mostly-NaN values still produces a number, and that number looks like a real score.</span></div>
@@ -2020,7 +2273,7 @@ cd frontend &amp;&amp; npm run dev</pre>
     </div>
 
     <div class="card">
-      <span class="tag">c &mdash; Dependency</span>
+      <span class="tag">d &mdash; Dependency</span>
       <h4>RAGAS import crash on a package it never uses</h4>
       <div class="pdf-row"><span class="k">Problem</span><span class="v">Importing RAGAS raised an <code>ImportError</code> on a clean environment.</span></div>
       <div class="pdf-row"><span class="k">Diagnosis</span><span class="v">RAGAS imports <code>langchain_community.chat_models.vertexai</code>, which current <code>langchain-community</code> no longer ships &mdash; even though this project never touches Vertex AI.</span></div>
@@ -2028,7 +2281,7 @@ cd frontend &amp;&amp; npm run dev</pre>
     </div>
 
     <div class="card">
-      <span class="tag">d &mdash; Dependency</span>
+      <span class="tag">e &mdash; Dependency</span>
       <h4>DeepEval's hard-coded OpenAI model whitelist</h4>
       <div class="pdf-row"><span class="k">Problem</span><span class="v">Pointing DeepEval at a local OpenAI-compatible endpoint was rejected despite the endpoint working for everything else.</span></div>
       <div class="pdf-row"><span class="k">Diagnosis</span><span class="v"><code>GPTModel</code> validates the model name against a hard-coded OpenAI whitelist, so an OpenAI-compatible base URL is not sufficient &mdash; the <em>name</em> has to be an OpenAI name.</span></div>
@@ -2036,7 +2289,7 @@ cd frontend &amp;&amp; npm run dev</pre>
     </div>
 
     <div class="card">
-      <span class="tag">e &mdash; Measured and rejected</span>
+      <span class="tag">f &mdash; Measured and rejected</span>
       <h4>Gemini free tier cannot sustain a judged evaluation</h4>
       <div class="pdf-row"><span class="k">Problem</span><span class="v">Hosted judging looked like a way to get a stronger judge than a local 7B model.</span></div>
       <div class="pdf-row"><span class="k">Diagnosis</span><span class="v">RAGAS needs roughly <strong>330 LLM calls per candidate model</strong> &mdash; context precision alone costs one call per retrieved context. The Gemini free tier allows about 20 requests per minute per model. Client-side pacing at 12 RPM still drew 429s, each carrying a server-mandated backoff of about 48 seconds, stalling throughput to <strong>2 jobs in 9 minutes</strong>. Separately, the <code>/v1beta/models</code> listing advertises models new keys cannot call: <code>gemini-2.5-flash</code> returns 404 &ldquo;no longer available to new users&rdquo;.</span></div>
@@ -2044,7 +2297,7 @@ cd frontend &amp;&amp; npm run dev</pre>
     </div>
 
     <div class="card">
-      <span class="tag">f &mdash; Self-inflicted</span>
+      <span class="tag">g &mdash; Self-inflicted</span>
       <h4>Resource contention from orphaned processes</h4>
       <div class="pdf-row"><span class="k">Problem</span><span class="v">Identical API calls degraded run over run: 43 s &rarr; 57 s &rarr; 76 s &rarr; 78 s. Nothing in the code had changed.</span></div>
       <div class="pdf-row"><span class="k">Diagnosis</span><span class="v">Orphaned Python processes left behind by interrupted evaluation runs had driven the 15-minute load average to <strong>21</strong>. The benchmark was measuring the machine, not the pipeline.</span></div>
@@ -2052,11 +2305,12 @@ cd frontend &amp;&amp; npm run dev</pre>
     </div>
 
     <div class="card">
-      <span class="tag">g &mdash; Methodology</span>
+      <span class="tag">h &mdash; Methodology</span>
       <h4>Judge independence is not automatic</h4>
       <div class="pdf-row"><span class="k">Problem</span><span class="v">Running RAGAS and DeepEval both feels like two independent checks on the same pipeline.</span></div>
       <div class="pdf-row"><span class="k">Diagnosis</span><span class="v">Running both frameworks on the <strong>same</strong> judge model measures one model's opinion twice and then calls the agreement corroboration. It is a single point of failure wearing two hats.</span></div>
       <div class="pdf-row"><span class="k">Fix</span><span class="v">Deliberately different model families: <strong>qwen2.5:7b for RAGAS</strong> and <strong>llama3.1:8b for DeepEval</strong>. Where the two frameworks then disagree, the correct conclusion is that neither number is reliable.</span></div>
+      <div class="pdf-row"><span class="k">It paid off</span><span class="v">This was a precaution taken on principle, and it returned a measured result: the two judges came out <strong>0.031 apart on answer relevancy but 0.234 apart on faithfulness</strong> for the same answers. One judge family would have reported a single confident faithfulness number, and two frameworks on that one judge would have made it look corroborated. See <a href="#judgeagreement">judge agreement</a>.</span></div>
     </div>
 
   </div>
@@ -2074,13 +2328,13 @@ cd frontend &amp;&amp; npm run dev</pre>
       <tbody>
         <tr><td>Parsing</td><td><strong>PyMuPDF</strong></td><td>100% gold-span recovery vs 96.7% for pypdf; 15&times; faster than pdfplumber</td></tr>
         <tr><td>Chunking</td><td><strong>recursive, 500 tokens, 50 overlap</strong></td><td>R@3 0.9000 &mdash; tied at the top; margin under one question</td></tr>
-        <tr><td>Embeddings</td><td><strong>BAAI/bge-small-en-v1.5</strong></td><td>R@3 0.9000 and MRR@10 0.8011 at 1.7 ms/query</td></tr>
+        <tr class="tie"><td>Embeddings</td><td><strong>BAAI/bge-small-en-v1.5</strong></td><td>R@3 0.9000 &mdash; tied with MiniLM; ahead on MRR@10 0.8011, behind on NDCG@3, at 1.7 ms/query</td></tr>
         <tr><td>Vector store</td><td><strong>FAISS</strong></td><td>Exact parity with Chroma on every retrieval metric; far faster index build</td></tr>
         <tr><td>Retrieval mode</td><td><strong>Hybrid</strong></td><td>R@3 0.9000 vs 0.7667 dense / 0.8667 sparse; wins every route column</td></tr>
         <tr><td>Fusion</td><td><strong>Weighted linear, alpha = 0.5</strong></td><td>R@3 0.9333 vs 0.9000 RRF &mdash; one question, caveat attached</td></tr>
         <tr class="neg"><td>Reranking</td><td><strong>None</strong></td><td>Cross-encoder lowered NDCG@3 to 0.8388 / 0.8343 and cost 103.7&ndash;176.2 ms</td></tr>
         <tr><td>Routing</td><td><strong>Top-1 chunk</strong></td><td>1.0000 on the eval questions; beat both richer policies</td></tr>
-        <tr><td>Generation</td><td><strong>qwen2.5:7b</strong></td><td>RAGAS faithfulness 0.8986, valid-citation rate 0.9333</td></tr>
+        <tr><td>Generation</td><td><strong>qwen2.5:7b</strong></td><td>RAGAS faithfulness 0.8986 / DeepEval faithfulness 0.6644, DeepEval G-Eval PolicyAccuracy 0.9867, valid-citation rate 0.9333, $0.00/query</td></tr>
       </tbody>
     </table>
   </div>
@@ -2101,12 +2355,15 @@ cd frontend &amp;&amp; npm run dev</pre>
       strong on all three routes.
     </li>
     <li>
-      <strong>Embedding model.</strong> bge-small over MiniLM, for +0.5 ms/query. See the artefact-drift
-      note below &mdash; the earlier synthesis recorded a larger gap than the current Stage 3 re-run shows.
+      <strong>Embedding model &mdash; a tie, and it used to look like a win.</strong> bge-small and MiniLM are
+      level at R@3 0.9000; bge-small takes MRR@10 (0.8011 vs 0.7889) and MiniLM takes NDCG@3 (0.8844 vs
+      0.8762), for +0.5 ms/query. The <strong>+0.1333 R@3</strong> gap an earlier synthesis recorded was
+      measured before the Stage 0b corpus cleaning and does not survive it &mdash; see
+      <a href="#stage3">Stage 3</a> and the artefact-drift note below.
     </li>
     <li>
       <strong>Chunking, fusion method, vector store.</strong> Differences at or inside the noise floor of
-      a 30-question set.
+      a 30-question set &mdash; and, on the current artefacts, the embedding model belongs in this group too.
     </li>
     <li class="rk-neg">
       <strong>Reranking.</strong> Actively harmful &mdash; a regression on both NDCG@3 and R@3, plus 100+ ms.
@@ -2129,9 +2386,11 @@ cd frontend &amp;&amp; npm run dev</pre>
     <p>
       The narrative synthesis in <code>reports/REPORT_TEMPLATE.md</code> was written against an earlier
       run and records &ldquo;+0.1333 R@3&rdquo; for bge-small over MiniLM, and an RRF selection for Stage 6.
+      That R@3 figure predates the Stage 0b corpus cleaning and does not survive it.
       The <strong>current measured artefacts</strong> in <code>reports/results/</code> supersede both:
-      Stage 3 shows MiniLM and bge-small tied at R@3 0.9000 with bge-small ahead on MRR@10
-      (0.8011 vs 0.7889) and DCG@3 (3.7964 vs 3.7412); and the shipped
+      Stage 3 shows MiniLM and bge-small tied at R@3 0.9000, with bge-small ahead on MRR@10
+      (0.8011 vs 0.7889) and DCG@3 (3.7964 vs 3.7412) and MiniLM ahead on NDCG@3 (0.8844 vs 0.8762);
+      and the shipped
       <code>final_retrieval_config.json</code> uses weighted linear at alpha = 0.5. Every table in this
       document is rendered from the JSON artefacts, not from the narrative. Re-running
       <code>scripts/build_report.py</code> reconciles the prose.
@@ -2152,9 +2411,23 @@ cd frontend &amp;&amp; npm run dev</pre>
       question set is the only real check.
     </li>
     <li>
-      <strong>Both judges are local 7&ndash;8B models.</strong> Cheap and reproducible, but weaker than a
-      frontier judge. Where RAGAS and DeepEval disagree, the correct conclusion is that neither number is
-      reliable.
+      <strong>The two judges disagree on faithfulness by 0.234, and both are local 7&ndash;8B models.</strong>
+      On identical answers and identical contexts, RAGAS (qwen judge) reports 0.8986 and DeepEval (llama
+      judge) reports 0.6644; they agree to within 0.031 on answer relevancy. So the answer-relevancy figure
+      is corroborated and the faithfulness figure is not &mdash; neither faithfulness number should be read
+      as precise, and the defensible claim is a 0.66&ndash;0.90 band. Local judges are cheap and
+      reproducible, but weaker than a frontier judge, and that is the most likely source of the spread.
+      Full working in <a href="#judgeagreement">judge agreement</a>.
+    </li>
+    <li>
+      <strong>An earlier draft of this section called the judges &ldquo;self-contradictory&rdquo;. That was
+      wrong, and the correction matters more than the original claim.</strong> The specific contradiction
+      &mdash; an implausibly bad hallucination score sitting next to a faithfulness score of 0.6644 from the same
+      framework &mdash; was <em>my</em> misuse of DeepEval's <code>HallucinationMetric</code>, which had been
+      handed five retrieved chunks where it expects ground truth. It was measuring retrieval breadth. The
+      judges were not contradicting themselves; the harness was asking one of them the wrong question. See
+      <a href="#warstories">war story a</a>. The genuine limitation is the 0.234 faithfulness disagreement
+      above, which is a narrower and better-evidenced claim.
     </li>
     <li>
       <strong>R2 is a known misroute.</strong> &ldquo;Liability limit for a damaged shipment&rdquo; routes
@@ -2218,6 +2491,7 @@ PYTHONPATH=src .venv/bin/python -m delta_rag.evalset      <span class="cm"># val
 .venv/bin/python scripts/calibrate_guardrail.py           <span class="cm"># abstain threshold</span>
 .venv/bin/python scripts/stage8_generate.py               <span class="cm"># Stage 8 generations</span>
 .venv/bin/python scripts/stage8_evaluate.py               <span class="cm"># RAGAS + DeepEval</span>
+.venv/bin/python scripts/rescore_hallucination.py         <span class="cm"># hallucination vs ground truth</span>
 .venv/bin/python scripts/run_acceptance_tests.py          <span class="cm"># graded acceptance tests</span>
 .venv/bin/python scripts/build_report.py                  <span class="cm"># rebuild the report</span></pre>
 
@@ -2226,7 +2500,7 @@ PYTHONPATH=src .venv/bin/python -m delta_rag.evalset      <span class="cm"># val
     <div class="item"><span class="k">Python</span><span class="v">3.12 (venv at <code>.venv</code>)</span></div>
     <div class="item"><span class="k">Inference</span><span class="v">Ollama, local, 127.0.0.1:11434</span></div>
     <div class="item"><span class="k">RAGAS judge</span><span class="v">qwen2.5-7b-judge, num_ctx 8192</span></div>
-    <div class="item"><span class="k">DeepEval judge</span><span class="v">llama3.1:8b, num_ctx 8192</span></div>
+    <div class="item"><span class="k">DeepEval judge</span><span class="v">llama3.1-latest-judge, num_ctx 8192</span></div>
     <div class="item"><span class="k">Numpy</span><span class="v">2.5.2 (the <code>numpy&lt;2</code> pin is not needed here)</span></div>
     <div class="item"><span class="k">Test suite</span><span class="v">30 unit tests, <code>pythonpath=src</code></span></div>
   </div>
@@ -2240,11 +2514,26 @@ PYTHONPATH=src .venv/bin/python -m delta_rag.evalset      <span class="cm"># val
 
   <h3>Outstanding</h3>
   <p>
+    <span class="badge badge-pass">Complete</span>
+    <strong>RAGAS and DeepEval for both judged generators.</strong>
+    <code>reports/results/stage8_scores__ragas.json</code> and
+    <code>reports/results/stage8_scores__deepeval.json</code> both hold <code>qwen2.5:7b</code> and
+    <code>llama3.2:3b</code>; Stage 8b is populated from them.
+  </p>
+  <p>
     <span class="badge badge-pending">Pending</span>
-    DeepEval scores for <code>qwen2.5:7b</code> and <code>llama3.2:3b</code>. The artefact
-    <code>reports/results/stage8_scores__deepeval.json</code> does not yet exist. Re-run
-    <code>scripts/stage8_evaluate.py</code> then <code>scripts/build_report.py</code> to populate the
-    DeepEval columns in Stage 8b.
+    <strong>The DeepEval hallucination column, for both models.</strong> The cached values were produced
+    with the five retrieved chunks in <code>context</code>, so they measure retrieval breadth rather than
+    hallucination (<a href="#warstories">war story a</a>) and are not reported. Run
+    <code>.venv/bin/python scripts/rescore_hallucination.py</code>: it recomputes only that metric against
+    the labelled ideal answers and keeps the other three from cache, about 45 minutes per model cheaper than
+    a full re-judge. A re-scored entry is identifiable by its <code>hallucination_context</code> key;
+    entries without that key must not be read as hallucination results.
+  </p>
+  <p>
+    <span class="badge badge-navy">Note</span>
+    Nothing else in this document is outstanding. Every other figure is transcribed from an artefact that
+    exists in <code>reports/results/</code> today.
   </p>
 </section>
 

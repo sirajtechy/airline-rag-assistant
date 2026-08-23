@@ -315,17 +315,33 @@ def run_deepeval(records: list[EvalRecord], model: str = DEEPEVAL_JUDGE_MODEL,
                 evaluation_params=policy_accuracy.evaluation_params, model=judge_local,
             ),
         }
-        test_case = LLMTestCase(
+        # Faithfulness/AnswerRelevancy/G-Eval judge the answer against what was
+        # actually retrieved, so they take `retrieval_context`.
+        retrieval_case = LLMTestCase(
             input=record.question,
             actual_output=record.answer,
             expected_output=record.ideal_answer,
             retrieval_context=record.contexts,
-            context=record.contexts,  # HallucinationMetric reads `context`
+            context=record.contexts,
+        )
+        # HallucinationMetric is different, and getting this wrong inflates the
+        # score badly. It emits one verdict *per context document* and returns
+        # hallucination_count / number_of_verdicts. Handed the 5 retrieved chunks,
+        # a correct answer that legitimately draws on only one of them scores as
+        # contradicting the other four — measuring retrieval breadth, not
+        # hallucination. DeepEval intends `context` to be ground truth, so the
+        # curated ideal answer is used instead.
+        hallucination_case = LLMTestCase(
+            input=record.question,
+            actual_output=record.answer,
+            expected_output=record.ideal_answer,
+            context=[record.ideal_answer],
         )
         out: dict[str, float] = {}
         for name, metric in local_metrics.items():
+            case = hallucination_case if name == "hallucination" else retrieval_case
             try:
-                metric.measure(test_case)
+                metric.measure(case)
                 if metric.score is not None:
                     out[name] = float(metric.score)
             except Exception as exc:
