@@ -121,6 +121,23 @@ def main() -> None:
             v = d.get(k)
             return None if v is None or v != v else round(float(v), 4)
 
+        # Withhold hallucination unless the cache proves it was measured against
+        # ground truth. HallucinationMetric emits one verdict per `context`
+        # document, so scoring it against the retrieved chunks measures retrieval
+        # breadth rather than hallucination. Entries written before that was fixed
+        # carry no `hallucination_context` key, and a wrong number presented as a
+        # result is worse than an acknowledged gap.
+        # The variant matters, not merely that one was recorded. An earlier pass
+        # used the curated ideal answer as `context`; because those references are
+        # short summaries, an answer carrying more correct detail than the summary
+        # is judged unsupported, so that variant penalises completeness. Only
+        # `gold_source` — the document text at the gold locator — is accepted.
+        def hallucination(d):
+            variant = str(d.get("hallucination_context", ""))
+            if not variant.startswith("gold_source"):
+                return None
+            return g(d, "hallucination")
+
         rows.append({
             "LLM": LABELS.get(model, model),
             "Faithfulness (RAGAS)": g(ragas_scores, "faithfulness"),
@@ -128,7 +145,7 @@ def main() -> None:
             "Context Precision (RAGAS)": g(ragas_scores, "context_precision"),
             "Context Recall (RAGAS)": g(ragas_scores, "context_recall"),
             "Faithfulness (DeepEval)": g(deepeval_scores, "faithfulness"),
-            "Hallucination (DeepEval, lower=better)": g(deepeval_scores, "hallucination"),
+            "Hallucination (DeepEval, lower=better)": hallucination(deepeval_scores),
             "G-Eval PolicyAccuracy (DeepEval)": g(deepeval_scores, "g_eval_policy_accuracy"),
             "Route acc": round(stats["route_accuracy"], 4),
             "Valid citations": round(stats["citations_valid"], 4),
@@ -156,7 +173,18 @@ def main() -> None:
         "customer even though a generic relevancy metric would pass it.\n\n"
         "Guardrail-blocked answers are excluded from the generation metrics: they have "
         "no retrieval context to be faithful to, so scoring them would penalise a model "
-        "for the guardrail working."
+        "for the guardrail working.\n\n"
+        "**An empty Hallucination cell is deliberate, not missing data.** DeepEval's "
+        "`HallucinationMetric` emits one verdict per document in `context` and returns "
+        "`hallucination_count / number_of_verdicts`, so what is passed as `context` "
+        "changes what is measured rather than merely shading it. The first run supplied "
+        "the five retrieved chunks; a correct answer typically draws on one, so the other "
+        "four produced verdicts against material the answer never needed — measuring "
+        "retrieval breadth, under which simply widening `top_k` would worsen the apparent "
+        "hallucination rate without changing a single answer. Values are therefore "
+        "reported only when the cache records that ground truth was used; see "
+        "`reports/results/hallucination_sensitivity.md` for all three variants measured "
+        "side by side."
     )
     save_stage("stage8_generation", "Stage 8 — LLM for generation", rows, notes=notes)
     print("\nwrote stage8_generation.md")
