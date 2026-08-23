@@ -1,13 +1,13 @@
 {
   "config": {
     "parser": "pymupdf",
-    "strategy": "rule_aware",
-    "size": 800,
-    "overlap": 100,
+    "strategy": "recursive",
+    "size": 500,
+    "overlap": 50,
     "embedding": "bge-small",
     "store": "faiss",
     "mode": "hybrid",
-    "fusion": "rrf",
+    "fusion": "weighted",
     "alpha": 0.5,
     "rerank": false,
     "rerank_candidates": 20,
@@ -15,59 +15,59 @@
   },
   "scores": {
     "n": 30,
-    "R@1": 0.6667,
-    "R@3": 0.9,
-    "MRR@10": 0.7708,
-    "DCG@3": 3.6956,
-    "NDCG@3": 0.8594,
-    "Route acc": 0.9667
+    "R@1": 0.7333,
+    "R@3": 0.9333,
+    "MRR@10": 0.8319,
+    "DCG@3": 3.8877,
+    "NDCG@3": 0.8849,
+    "Route acc": 1.0
   },
   "by_route": {
     "cargo": {
       "n": 11,
-      "R@1": 0.3636,
-      "R@3": 0.8182,
-      "MRR@10": 0.572,
-      "DCG@3": 3.1785,
-      "NDCG@3": 0.7599,
+      "R@1": 0.4545,
+      "R@3": 0.9091,
+      "MRR@10": 0.6667,
+      "DCG@3": 3.4296,
+      "NDCG@3": 0.8147,
       "Route acc": null
     },
     "financial": {
       "n": 7,
       "R@1": 0.8571,
       "R@3": 0.8571,
-      "MRR@10": 0.8571,
+      "MRR@10": 0.875,
       "DCG@3": 3.6837,
-      "NDCG@3": 0.9609,
+      "NDCG@3": 0.8917,
       "Route acc": null
     },
     "passenger": {
       "n": 12,
-      "R@1": 0.8333,
+      "R@1": 0.9167,
       "R@3": 1.0,
-      "MRR@10": 0.9028,
-      "DCG@3": 4.1765,
-      "NDCG@3": 0.8915,
+      "MRR@10": 0.9583,
+      "DCG@3": 4.4265,
+      "NDCG@3": 0.9452,
       "Route acc": null
     }
   },
   "by_query_type": {
     "keyword": {
       "n": 14,
-      "R@1": 0.6429,
-      "R@3": 0.8571,
-      "MRR@10": 0.747,
-      "DCG@3": 3.7228,
-      "NDCG@3": 0.8501,
+      "R@1": 0.7143,
+      "R@3": 0.9286,
+      "MRR@10": 0.8185,
+      "DCG@3": 3.9915,
+      "NDCG@3": 0.8413,
       "Route acc": null
     },
     "semantic": {
       "n": 16,
-      "R@1": 0.6875,
+      "R@1": 0.75,
       "R@3": 0.9375,
-      "MRR@10": 0.7917,
-      "DCG@3": 3.6718,
-      "NDCG@3": 0.8676,
+      "MRR@10": 0.8438,
+      "DCG@3": 3.7968,
+      "NDCG@3": 0.923,
       "Route acc": null
     }
   },
@@ -78,7 +78,7 @@
       "route": "passenger",
       "query_type": "semantic",
       "grades": [
-        3,
+        2,
         1,
         1,
         1,
@@ -87,13 +87,11 @@
         1,
         1,
         1,
-        1
+        0
       ],
       "top_doc": "contract_of_carriage",
       "top_locators": [
-        "p16",
-        "p17",
-        "p18"
+        "p17"
       ]
     },
     {
@@ -111,7 +109,7 @@
         1,
         1,
         1,
-        1
+        2
       ],
       "top_doc": "contract_of_carriage",
       "top_locators": [
@@ -124,12 +122,12 @@
       "route": "passenger",
       "query_type": "semantic",
       "grades": [
+        2,
+        2,
         3,
-        1,
         2,
         1,
         1,
-        2,
         1,
         1,
         1,
@@ -149,7 +147,7 @@
       "grades": [
         3,
         2,
-        1,
+        2,
         1,
         1,
         1,
@@ -160,6 +158,7 @@
       ],
       "top_doc": "contract_of_carriage",
       "top_locators": [
+        "p21",
         "p22"
       ]
     },
@@ -177,7 +176,7 @@
         1,
         1,
         1,
-        1,
+        0,
         1
       ],
       "top_doc": "contract_of_carriage",
@@ -196,10 +195,10 @@
         1,
         1,
         1,
+        1,
+        1,
+        1,
         0,
-        1,
-        1,
-        1,
         1
       ],
       "top_doc": "contract_of_carriage",
@@ -214,19 +213,20 @@
       "query_type": "semantic",
       "grades": [
         1,
-        1,
-        3,
-        1,
+        2,
         1,
         1,
-        0,
         1,
         1,
-        2
+        1,
+        1,
+        1,
+        1
       ],
       "top_doc": "contract_of_carriage",
       "top_locators": [
-        "p21"
+        "p11",
+        "p12"
       ]
     },
     {
@@ -236,20 +236,19 @@
       "query_type": "keyword",
       "grades": [
         2,
+        3,
+        2,
+        0,
+        1,
         0,
         1,
         1,
-        0,
-        0,
         1,
-        0,
-        1,
-        3
+        0
       ],
       "top_doc": "contract_of_carriage",
       "top_locators": [
-        "p6",
-        "p7"
+        "p6"
       ]
     },
     {
@@ -258,9 +257,9 @@
       "route": "passenger",
       "query_type": "semantic",
       "grades": [
-        2,
         3,
         1,
+        2,
         1,
         1,
         1,
@@ -271,9 +270,8 @@
       ],
       "top_doc": "contract_of_carriage",
       "top_locators": [
-        "p16",
-        "p17",
-        "p18"
+        "p18",
+        "p19"
       ]
     },
     {
@@ -282,21 +280,21 @@
       "route": "passenger",
       "query_type": "keyword",
       "grades": [
-        1,
         3,
         1,
         1,
         2,
+        0,
         1,
         1,
         1,
         1,
-        1
+        0
       ],
       "top_doc": "contract_of_carriage",
       "top_locators": [
-        "p10",
-        "p11"
+        "p22",
+        "p23"
       ]
     },
     {
@@ -307,20 +305,18 @@
       "grades": [
         3,
         2,
+        2,
         1,
         1,
         1,
         1,
         1,
         1,
-        1,
-        1
+        0
       ],
       "top_doc": "contract_of_carriage",
       "top_locators": [
-        "p16",
-        "p17",
-        "p18"
+        "p17"
       ]
     },
     {
@@ -330,18 +326,19 @@
       "query_type": "keyword",
       "grades": [
         3,
+        1,
+        2,
+        0,
         2,
         1,
         1,
         1,
-        0,
         1,
-        1,
-        0,
-        1
+        0
       ],
       "top_doc": "contract_of_carriage",
       "top_locators": [
+        "p21",
         "p22"
       ]
     },
@@ -351,21 +348,21 @@
       "route": "cargo",
       "query_type": "semantic",
       "grades": [
-        0,
-        0,
         3,
         1,
+        0,
+        0,
         1,
         0,
+        1,
+        1,
         0,
-        0,
-        0,
-        0
+        1
       ],
-      "top_doc": "contract_of_carriage",
+      "top_doc": "cargo_tariff",
       "top_locators": [
-        "p13",
-        "p14"
+        "p1",
+        "p3"
       ]
     },
     {
@@ -376,19 +373,19 @@
       "grades": [
         1,
         1,
-        1,
-        1,
-        1,
-        1,
-        1,
         3,
         1,
+        1,
+        1,
+        1,
+        1,
+        0,
         1
       ],
       "top_doc": "cargo_tariff",
       "top_locators": [
-        "p8",
-        "p9"
+        "p14",
+        "p15"
       ]
     },
     {
@@ -403,10 +400,10 @@
         0,
         1,
         1,
-        0,
-        0,
         1,
-        1
+        0,
+        0,
+        0
       ],
       "top_doc": "cargo_tariff",
       "top_locators": [
@@ -421,19 +418,20 @@
       "query_type": "keyword",
       "grades": [
         1,
-        3,
         2,
         1,
         1,
+        3,
+        1,
         1,
         0,
-        1,
         1,
         1
       ],
       "top_doc": "cargo_tariff",
       "top_locators": [
-        "p2"
+        "p1",
+        "p3"
       ]
     },
     {
@@ -443,14 +441,14 @@
       "query_type": "semantic",
       "grades": [
         3,
-        1,
-        0,
         0,
         2,
+        0,
         1,
         1,
         2,
         1,
+        0,
         1
       ],
       "top_doc": "cargo_tariff",
@@ -465,15 +463,15 @@
       "query_type": "keyword",
       "grades": [
         3,
-        0,
         1,
         0,
+        1,
         0,
         1,
-        2,
         1,
+        0,
         1,
-        1
+        2
       ],
       "top_doc": "cargo_tariff",
       "top_locators": [
@@ -499,8 +497,8 @@
       ],
       "top_doc": "cargo_tariff",
       "top_locators": [
-        "p3",
-        "p4"
+        "p1",
+        "p3"
       ]
     },
     {
@@ -510,9 +508,9 @@
       "query_type": "keyword",
       "grades": [
         1,
-        1,
         3,
-        2,
+        1,
+        1,
         2,
         1,
         1,
@@ -522,8 +520,8 @@
       ],
       "top_doc": "cargo_tariff",
       "top_locators": [
-        "p19",
-        "p20"
+        "p15",
+        "p16"
       ]
     },
     {
@@ -535,13 +533,13 @@
         3,
         1,
         1,
+        1,
+        1,
+        1,
         0,
         1,
         1,
-        1,
-        1,
-        1,
-        0
+        1
       ],
       "top_doc": "cargo_tariff",
       "top_locators": [
@@ -561,10 +559,10 @@
         1,
         1,
         1,
-        0,
         1,
-        0,
-        0
+        1,
+        2,
+        1
       ],
       "top_doc": "cargo_tariff",
       "top_locators": [
@@ -607,7 +605,7 @@
         1,
         1,
         1,
-        1,
+        0,
         1,
         1
       ],
@@ -629,7 +627,7 @@
         1,
         1,
         1,
-        1,
+        3,
         1,
         1
       ],
@@ -648,12 +646,12 @@
         0,
         0,
         0,
-        1,
+        0,
         0,
         1,
         0,
-        1,
-        0
+        0,
+        1
       ],
       "top_doc": "financial_xbrl",
       "top_locators": [
@@ -713,11 +711,11 @@
         3,
         1,
         1,
-        1,
-        1,
-        1,
-        1,
         0,
+        1,
+        1,
+        1,
+        1,
         1,
         1
       ],
@@ -738,10 +736,10 @@
         1,
         1,
         1,
-        0,
+        1,
         1,
         0,
-        1
+        0
       ],
       "top_doc": "financial_xbrl",
       "top_locators": [

@@ -9,16 +9,16 @@
 | 0.6300 | 1.0000 | 0.1250 | 1.1250 |
 | 0.6500 | 1.0000 | 0.1250 | 1.1250 |
 | 0.6700 | 1.0000 | 0.2500 | 1.2500 |
-| 0.6900 | 0.9333 | 0.3750 | 1.3083 |
-| 0.7100 | 0.9333 | 0.5000 | 1.4333 |
-| 0.7300 | 0.7333 | 1.0000 | 1.7333 |
-| 0.7500 | 0.5000 | 1.0000 | 1.5000 |
+| 0.6900 | 0.9000 | 0.3750 | 1.2750 |
+| 0.7100 | 0.8667 | 0.6250 | 1.4917 |
+| 0.7300 | 0.7667 | 1.0000 | 1.7667 |
+| 0.7500 | 0.5667 | 1.0000 | 1.5667 |
 | 0.7700 | 0.4333 | 1.0000 | 1.4333 |
-| 0.7900 | 0.3667 | 1.0000 | 1.3667 |
-| 0.8100 | 0.2333 | 1.0000 | 1.2333 |
+| 0.7900 | 0.3000 | 1.0000 | 1.3000 |
+| 0.8100 | 0.1667 | 1.0000 | 1.1667 |
 | 0.8300 | 0.1333 | 1.0000 | 1.1333 |
 | 0.8500 | 0.0333 | 1.0000 | 1.0333 |
-| 0.8700 | 0.0333 | 1.0000 | 1.0333 |
+| 0.8700 | 0.0000 | 1.0000 | 1.0000 |
 
 ## Reading of these numbers
 
@@ -30,6 +30,6 @@ That is why the threshold is set to reject **no** answerable question rather tha
 
 The gate runs on the **dense cosine similarity** of the best retrieved chunk, not the fused RRF score. RRF scores are a function of rank position and carry no absolute meaning — a score of 0.03 means nothing on its own and is not comparable between queries — so no fixed threshold on it could be meaningful. Cosine similarity is bounded in [0, 1] and comparable across queries, which is what a confidence floor requires.
 
-The two populations **overlap**: the hardest answerable question scores 0.679 while the most confidently-retrieved unanswerable probe scores 0.726. No threshold separates them perfectly, so this is an explicit trade-off, not a solved problem. It is tuned toward refusing, because inventing a baggage fee is a worse failure for a support bot than declining a question it could have answered.
+The two populations **overlap**: the hardest answerable question scores 0.674 while the most confidently-retrieved unanswerable probe scores 0.729. No threshold separates them perfectly, so this is an explicit trade-off, not a solved problem. It is tuned toward refusing, because inventing a baggage fee is a worse failure for a support bot than declining a question it could have answered.
 
 The unanswerable probes are plausible Delta questions whose answers are genuinely outside these three documents (international fees, SkyMiles earning, lounge hours, aircraft configuration). They deliberately avoid competitor names and 'my booking' phrasing so they exercise this gate rather than the deterministic pre-retrieval guards.

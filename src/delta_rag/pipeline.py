@@ -44,11 +44,11 @@ def load_final_config() -> PipelineConfig:
         return PipelineConfig(**{k: v for k, v in data.items()
                                  if k in PipelineConfig.__dataclass_fields__})
     # Measured winners, hard-coded as a fallback so the app runs without the
-    # ablation artefacts present.
+    # ablation artefacts present. Mirrors reports/results/final_retrieval_config.json.
     return PipelineConfig(
-        parser="pymupdf", strategy="rule_aware", size=800, overlap=100,
-        embedding="bge-small", store="faiss", mode="hybrid", fusion="rrf",
-        rerank=False,
+        parser="pymupdf", strategy="recursive", size=500, overlap=50,
+        embedding="bge-small", store="faiss", mode="hybrid", fusion="weighted",
+        alpha=0.5, rerank=False,
     )
 
 

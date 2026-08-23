@@ -4,21 +4,21 @@
     "Index build time (ms)": 0.06,
     "Metadata filtering": "emulated",
     "Persistence": "yes",
-    "R@1": 0.6667,
+    "R@1": 0.7,
     "R@3": 0.9,
-    "MRR@10": 0.7708,
-    "DCG@3": 3.6956,
-    "NDCG@3": 0.8594
+    "MRR@10": 0.8011,
+    "DCG@3": 3.7964,
+    "NDCG@3": 0.8762
   },
   {
     "Vector DB": "chromadb",
-    "Index build time (ms)": 323.63,
+    "Index build time (ms)": 255.72,
     "Metadata filtering": "native",
     "Persistence": "yes",
-    "R@1": 0.6667,
+    "R@1": 0.7,
     "R@3": 0.9,
-    "MRR@10": 0.7708,
-    "DCG@3": 3.6956,
-    "NDCG@3": 0.8594
+    "MRR@10": 0.8011,
+    "DCG@3": 3.7964,
+    "NDCG@3": 0.8762
   }
 ]

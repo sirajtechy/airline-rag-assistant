@@ -4,7 +4,7 @@
 |---|---|---|---|
 | top-1 chunk | 1.0000 | 0.9714 | 1 |
 | rank-weighted vote (top-5) | 0.9667 | 0.9143 | 3 |
-| vote + defined-term prior | 0.9667 | 0.9429 | 2 |
+| vote + defined-term prior | 0.9667 | 0.9143 | 3 |
 
 ## Reading of these numbers
 
@@ -25,3 +25,4 @@ The prior is weighted at 0.35 of the retrieval evidence, so it breaks ties rathe
 **vote + defined-term prior** misroutes:
 - 'How much revenue did Delta make from shippin' -> cargo (want financial)
 - 'How much revenue did Delta make from shippin' -> cargo (want financial)
+- "What is Delta's liability limit for a damage" -> passenger (want cargo)

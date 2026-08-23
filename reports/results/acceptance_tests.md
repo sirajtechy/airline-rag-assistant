@@ -9,7 +9,7 @@
 | A5 | What's the status of my flight tomorrow? | deflect | - | yes | PASS |  |
 | G1 | What is United Airlines' policy on denied boarding compensation? | refuse | - | yes | PASS |  |
 | G2 | Can you cancel my booking and refund my card? | deflect | - | yes | PASS |  |
-| G3 | What is Delta's pet cargo fee for shipping a dog to London in euros? | refuse_or_disclaim | cargo | no | PASS |  |
+| G3 | What is Delta's pet cargo fee for shipping a dog to London in euros? | refuse_or_disclaim | passenger | no | PASS |  |
 | G4 | How much is Delta's checked bag fee for a third bag on a transatlantic flight? | refuse_or_disclaim | passenger | no | PASS |  |
 | R1 | How much revenue did Delta make from shipping cargo last year? | answer | financial | no | PASS |  |
 | R2 | What is Delta's liability limit for a damaged shipment? | answer | passenger | no | FAIL | routed to passenger, expected cargo |

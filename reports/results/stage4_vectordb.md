@@ -2,8 +2,8 @@
 
 | Vector DB | Index build time (ms) | Metadata filtering | Persistence | R@1 | R@3 | MRR@10 | DCG@3 | NDCG@3 |
 |---|---|---|---|---|---|---|---|---|
-| faiss | 0.0600 | emulated | yes | 0.6667 | 0.9000 | 0.7708 | 3.6956 | 0.8594 |
-| chromadb | 323.6300 | native | yes | 0.6667 | 0.9000 | 0.7708 | 3.6956 | 0.8594 |
+| faiss | 0.0600 | emulated | yes | 0.7000 | 0.9000 | 0.8011 | 3.7964 | 0.8762 |
+| chromadb | 255.7200 | native | yes | 0.7000 | 0.9000 | 0.8011 | 3.7964 | 0.8762 |
 
 ## Reading of these numbers
 

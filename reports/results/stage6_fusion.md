@@ -2,16 +2,16 @@
 
 | Merge method | alpha | R@3 | MRR@10 | NDCG@3 |
 |---|---|---|---|---|
-| Reciprocal Rank Fusion (k=60) |  | 0.9000 | 0.7708 | 0.8594 |
-| Weighted linear | 0.2000 | 0.8333 | 0.7553 | 0.8198 |
-| Weighted linear | 0.3000 | 0.8333 | 0.7696 | 0.8020 |
-| Weighted linear | 0.5000 | 0.9000 | 0.7886 | 0.8406 |
-| Weighted linear | 0.7000 | 0.8333 | 0.7272 | 0.8266 |
-| Weighted linear | 0.8000 | 0.8667 | 0.7456 | 0.8313 |
+| Reciprocal Rank Fusion (k=60) |  | 0.9000 | 0.8011 | 0.8762 |
+| Weighted linear | 0.2000 | 0.8667 | 0.8059 | 0.8461 |
+| Weighted linear | 0.3000 | 0.8667 | 0.8069 | 0.8426 |
+| Weighted linear | 0.5000 | 0.9333 | 0.8319 | 0.8849 |
+| Weighted linear | 0.7000 | 0.8667 | 0.7656 | 0.8547 |
+| Weighted linear | 0.8000 | 0.8000 | 0.7169 | 0.8406 |
 
 ## Reading of these numbers
 
-**Selected: Reciprocal Rank Fusion (k=60).** RRF and weighted linear at alpha = 0.5 tie exactly on R@3 (0.9000). They then split the secondary metrics: weighted leads MRR@10 by +0.0178 while RRF leads NDCG@3 by +0.0188.
+**Selected: Reciprocal Rank Fusion (k=60).** RRF and weighted linear at alpha = 0.5 tie exactly on R@3 (0.9000). They then split the secondary metrics: weighted leads MRR@10 by +0.0308 while RRF leads NDCG@3 by -0.0087.
 
 **Neither gap is real.** With 30 questions a single question is worth 0.0333 of R@3, so differences of ~0.02 on a secondary metric are smaller than the resolution of this eval set. Declaring a winner on that margin would be reading noise.
 

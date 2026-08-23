@@ -3,33 +3,33 @@
     "Parser": "pypdf",
     "Clean text %": "97.8%",
     "Gold spans recoverable": "96.7%",
-    "Parse time (s)": 1.47,
+    "Parse time (s)": 1.58,
     "R@1": 0.7333,
-    "R@3": 0.8333,
-    "MRR@10": 0.7978,
-    "DCG@3": 3.6904,
-    "NDCG@3": 0.8483
+    "R@3": 0.8667,
+    "MRR@10": 0.8078,
+    "DCG@3": 3.9043,
+    "NDCG@3": 0.8877
   },
   {
     "Parser": "pdfplumber",
     "Clean text %": "97.8%",
     "Gold spans recoverable": "100.0%",
-    "Parse time (s)": 4.35,
-    "R@1": 0.6667,
-    "R@3": 0.7667,
-    "MRR@10": 0.7414,
-    "DCG@3": 3.4948,
-    "NDCG@3": 0.821
+    "Parse time (s)": 4.47,
+    "R@1": 0.6333,
+    "R@3": 0.8,
+    "MRR@10": 0.7329,
+    "DCG@3": 3.5587,
+    "NDCG@3": 0.8174
   },
   {
     "Parser": "pymupdf",
     "Clean text %": "97.8%",
     "Gold spans recoverable": "100.0%",
-    "Parse time (s)": 0.45,
-    "R@1": 0.7333,
-    "R@3": 0.8333,
-    "MRR@10": 0.7936,
-    "DCG@3": 3.7658,
-    "NDCG@3": 0.8568
+    "Parse time (s)": 0.3,
+    "R@1": 0.7,
+    "R@3": 0.9,
+    "MRR@10": 0.8011,
+    "DCG@3": 3.7964,
+    "NDCG@3": 0.8762
   }
 ]

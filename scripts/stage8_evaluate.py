@@ -55,43 +55,67 @@ def load_records(model: str) -> tuple[list[EvalRecord], dict]:
     return records, stats
 
 
+def cache_path(framework: str) -> Path:
+    """Per-framework cache.
+
+    RAGAS and DeepEval use different judge models, so they are run as two separate
+    processes in parallel and must not write to the same file. Caching per
+    (framework, model) also means an interrupted run never loses completed work.
+    """
+    return RESULTS_DIR / f"stage8_scores__{framework}.json"
+
+
+def score_framework(framework: str, models: list[str]) -> dict:
+    """Run one judge framework across the candidate models, caching per model."""
+    path = cache_path(framework)
+    cache = json.loads(path.read_text()) if path.exists() else {}
+    runner = run_ragas if framework == "ragas" else run_deepeval
+    judge = RAGAS_JUDGE_MODEL if framework == "ragas" else DEEPEVAL_JUDGE_MODEL
+
+    for model in models:
+        if not generations_path(model).exists():
+            print(f"[{framework}] {model}: no generations, skipping", flush=True)
+            continue
+        if model in cache:
+            print(f"[{framework}] {model}: cached", flush=True)
+            continue
+        records, _ = load_records(model)
+        print(f"[{framework}] {model}: judging {len(records)} answers with {judge}…",
+              flush=True)
+        started = time.time()
+        try:
+            cache[model] = runner(records)
+        except Exception as exc:
+            print(f"[{framework}] {model} FAILED: {type(exc).__name__}: {exc}", flush=True)
+            cache[model] = {}
+        print(f"[{framework}] {model}: {time.time() - started:.0f}s -> {cache[model]}",
+              flush=True)
+        path.write_text(json.dumps(cache, indent=2))
+    return cache
+
+
 def main() -> None:
-    cache_path = RESULTS_DIR / "stage8_scores_cache.json"
-    cache = json.loads(cache_path.read_text()) if cache_path.exists() else {}
+    # `--framework ragas|deepeval` scores one framework only, so the two can be run
+    # concurrently. With no argument both run sequentially in this process.
+    args = sys.argv[1:]
+    only = None
+    if "--framework" in args:
+        only = args[args.index("--framework") + 1]
+
+    models = [m for m in CANDIDATES if generations_path(m).exists()]
+    if only:
+        score_framework(only, models)
+        print(f"[{only}] complete")
+        return
+
+    ragas_cache = score_framework("ragas", models)
+    deepeval_cache = score_framework("deepeval", models)
 
     rows = []
-    for model in CANDIDATES:
-        if not generations_path(model).exists():
-            print(f"=== {model}: no generations, skipping ===")
-            continue
-        print(f"=== {model} ===", flush=True)
-        records, stats = load_records(model)
-
-        if model in cache:
-            ragas_scores, deepeval_scores = cache[model]["ragas"], cache[model]["deepeval"]
-            print("  cached scores")
-        else:
-            t = time.time()
-            print(f"  RAGAS   (judge={RAGAS_JUDGE_MODEL}) on {len(records)} answers…",
-                  flush=True)
-            try:
-                ragas_scores = run_ragas(records)
-            except Exception as exc:
-                print(f"    RAGAS FAILED: {type(exc).__name__}: {exc}")
-                ragas_scores = {}
-            print(f"    done in {time.time() - t:.0f}s -> {ragas_scores}", flush=True)
-
-            t = time.time()
-            print(f"  DeepEval (judge={DEEPEVAL_JUDGE_MODEL})…", flush=True)
-            try:
-                deepeval_scores = run_deepeval(records)
-            except Exception as exc:
-                print(f"    DeepEval FAILED: {type(exc).__name__}: {exc}")
-                deepeval_scores = {}
-            print(f"    done in {time.time() - t:.0f}s -> {deepeval_scores}", flush=True)
-
-            cache[model] = {"ragas": ragas_scores, "deepeval": deepeval_scores}
-            cache_path.write_text(json.dumps(cache, indent=2))
+    for model in models:
+        _, stats = load_records(model)
+        ragas_scores = ragas_cache.get(model, {})
+        deepeval_scores = deepeval_cache.get(model, {})
 
         def g(d, k):
             v = d.get(k)

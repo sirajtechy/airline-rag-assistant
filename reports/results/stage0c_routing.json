@@ -14,7 +14,7 @@
   {
     "Routing policy": "vote + defined-term prior",
     "Route acc (30 eval questions)": 0.9667,
-    "Route acc (all 33 cases)": 0.9429,
-    "Misroutes": 2
+    "Route acc (all 33 cases)": 0.9143,
+    "Misroutes": 3
   }
 ]
